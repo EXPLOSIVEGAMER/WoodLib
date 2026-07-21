@@ -1,0 +1,4 @@
+name: WoodLib
+version: '1.0'
+main: at.woodexplosive.woodlib_plugin.WoodLibPlugin
+api-version: '1.21'

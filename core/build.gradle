@@ -1,0 +1,33 @@
+// woodlib-core: die reine Library. KEINE plugin.yml.
+// Consumer nutzen dieses Artefakt: compileOnly (Standalone) oder implementation + Shade.
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+}
+
+// Javadoc- und Sources-JAR miterzeugen und -veröffentlichen (für Consumer-IDEs).
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+tasks.named('javadoc') {
+    options.encoding = 'UTF-8'
+    // doclint aus: bricht sonst an undokumentierten Elementen / externen @links ab.
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId = 'at.woodexplosive'
+            artifactId = 'woodlib-core'
+            version = '1.0'
+        }
+    }
+}

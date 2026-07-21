@@ -1,0 +1,23 @@
+// woodlib plugin: das eigenständige Standalone-Plugin.
+// Enthält plugin.yml + WoodLibPlugin und shadet core mit ein -> eine ladbare JAR.
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.0.0'
+}
+
+dependencies {
+    compileOnly 'io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT'
+    implementation project(':core')
+}
+
+// Ergebnis: build/libs/WoodLib-1.0.jar (für den plugins/-Ordner)
+shadowJar {
+    archiveBaseName.set('WoodLib')
+    archiveClassifier.set('')
+    archiveVersion.set('1.0')
+}
+
+// build soll direkt die fertige Standalone-JAR erzeugen
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
+}

@@ -1,0 +1,3 @@
+rootProject.name = 'WoodLib'
+include 'core'
+include 'plugin'

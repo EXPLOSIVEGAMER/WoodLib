@@ -24,10 +24,10 @@ tasks.named('javadoc') {
 publishing {
     publications {
         maven(MavenPublication) {
-            from components.java
             groupId = 'at.woodexplosive'
             artifactId = 'woodlib-core'
             version = '1.0'
+            from components.java
         }
     }
 }

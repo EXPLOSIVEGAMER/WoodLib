@@ -1,4 +1,4 @@
-[![](https://jitpack.io/v/EXPLOSIVEGAMER/WoodLib.svg)](https://jitpack.io/#EXPLOSIVEGAMER/WoodLib)
+[![jitpack](https://jitpack.io/v/EXPLOSIVEGAMER/WoodLib.svg)](https://jitpack.io/#EXPLOSIVEGAMER/WoodLib)
 
 # WoodLib
 WoodLib is an Bukkit Plugin library made by me (WoodEXPLOSIVE).
@@ -22,6 +22,9 @@ WoodLib is an Bukkit Plugin library made by me (WoodEXPLOSIVE).
 - SimplePagedGui
 - SimpleTabbedGui
 - SimpleTabbedPagedGui
+
+##Utilities:
+- MathUtil
 
 And many more to come
 

@@ -35,7 +35,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'at.woodexplosive'
             artifactId = 'woodlib-core'
-            version = '1.0'
+            version = '1.0.2'
             from components.java
         }
     }

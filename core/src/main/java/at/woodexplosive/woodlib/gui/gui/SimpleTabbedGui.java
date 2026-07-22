@@ -30,20 +30,39 @@ import java.util.List;
  */
 public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITabbedGui<SimpleTabbedGui> {
 
+    /** The tabs of this GUI, in order. */
     private final List<ITab> tabs = new ArrayList<>();
+    /** The slot indices the tab buttons are rendered into. */
     private final List<Integer> tabSlots;
+    /** The slot indices the active tab's content is rendered into. */
     private final List<Integer> contentSlots;
 
-    protected final Callback<GuiTabChangeEvent<SimpleTabbedGui>> onTabChange;
+    /** Callback run when the active tab changes; returning {@code true} cancels the change. */
+    protected final Callback<GuiTabChangeEvent> onTabChange;
 
+    /** The currently active tab, or {@code null} if no tab has been added yet. */
     private ITab activeTab;
 
-    protected SimpleTabbedGui(Component title, int size, InventoryType type,
-                             Callback<InventoryCloseEvent> onClose, Callback<InventoryOpenEvent> onOpen,
-                             Callback<InventoryDragEvent> onDrag, Callback<GuiTickEvent<SimpleTabbedGui>> onTick,
-                             IGuiElement.ClickCallback onClickGlobal,
-                             Callback<GuiTabChangeEvent<SimpleTabbedGui>> onTabChange,
-                             boolean playerManipulation, List<Integer> tabSlots, List<Integer> contentSlots) {
+    /**
+     * @param title the inventory title
+     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose the close callback
+     * @param onOpen the open callback
+     * @param onDrag the drag callback
+     * @param onTick the per-tick callback
+     * @param onClickGlobal the global click callback
+     * @param onTabChange the tab-change callback
+     * @param playerManipulation {@code true} to allow the player to move items in the inventory
+     * @param tabSlots the slot indices the tab buttons are rendered into
+     * @param contentSlots the slot indices the active tab's content is rendered into
+     */
+    protected SimpleTabbedGui(@NotNull Component title, int size, @Nullable InventoryType type,
+                             @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
+                             @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
+                             IGuiElement.@NotNull ClickCallback onClickGlobal,
+                             @NotNull Callback<GuiTabChangeEvent> onTabChange,
+                             boolean playerManipulation, @NotNull List<Integer> tabSlots, @NotNull List<Integer> contentSlots) {
 
         super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
         this.onTabChange = onTabChange;
@@ -99,7 +118,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
 
     @Override
     public SimpleTabbedGui setTab(@NonNull ITab tab) {
-        GuiTabChangeEvent<SimpleTabbedGui> event = new GuiTabChangeEvent<>(this, this.activeTab, tab);
+        GuiTabChangeEvent event = new GuiTabChangeEvent(this, this.activeTab, tab);
         if (event.callEvent() && !this.onTabChange.run(event)) {
             this.activeTab = tab;
             this.redraw();
@@ -139,16 +158,24 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
         private Callback<InventoryOpenEvent> onOpen = IGui.emptyCallback();
         private Callback<InventoryDragEvent> onDrag = IGui.emptyCallback();
-        private Callback<GuiTickEvent<SimpleTabbedGui>> onTick = IGui.emptyCallback();
-        private Callback<GuiTabChangeEvent<SimpleTabbedGui>> onTabChange = IGui.emptyCallback();
+        private Callback<GuiTickEvent> onTick = IGui.emptyCallback();
+        private Callback<GuiTabChangeEvent> onTabChange = IGui.emptyCallback();
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
+        /**
+         * @param title the inventory title
+         * @param size the inventory size (multiple of 9)
+         */
         public Builder(Component title, int size) {
             this.title = title;
             this.size = size;
             this.type = null;
         }
 
+        /**
+         * @param title the inventory title
+         * @param type the inventory type (its default size is used)
+         */
         public Builder(Component title, InventoryType type) {
             this.title = title;
             this.size = type.getDefaultSize();
@@ -174,7 +201,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         }
 
         @Override
-        public Builder setOnTick(@NotNull Callback<GuiTickEvent<SimpleTabbedGui>> onTick) {
+        public Builder setOnTick(@NotNull Callback<GuiTickEvent> onTick) {
             this.onTick = onTick;
             return this;
         }
@@ -258,7 +285,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         }
 
         @Override
-        public Builder onTabChange(@NotNull Callback<GuiTabChangeEvent<SimpleTabbedGui>> onTabChange) {
+        public Builder onTabChange(@NotNull Callback<GuiTabChangeEvent> onTabChange) {
             this.onTabChange = onTabChange;
             return this;
         }

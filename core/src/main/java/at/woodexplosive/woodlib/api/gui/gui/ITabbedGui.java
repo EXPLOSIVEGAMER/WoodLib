@@ -118,7 +118,7 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
             IGuiElement button = tab.getTabElement();
             if (button == null) continue;
             if (!button.hasCallback()) {
-                button = GuiElementBuilder.of(button).setCallback((event, gui, element, clickType, action) -> {
+                button = GuiElementBuilder.of(button).setCallback(event -> {
                     this.setTab(tab);
                     return true;
                 }).buildElement();

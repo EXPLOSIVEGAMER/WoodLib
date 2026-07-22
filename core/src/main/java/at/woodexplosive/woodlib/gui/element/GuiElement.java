@@ -7,6 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
 
+import java.util.UUID;
+
 /**
  * Default {@link IGuiElement} implementation: an {@link ItemStack} plus an optional
  * {@link ClickCallback}.
@@ -17,8 +19,12 @@ import org.jetbrains.annotations.Contract;
  */
 public class GuiElement implements IGuiElement {
 
+    /** This element's click callback (see {@link #hasCallback()}). */
     protected final ClickCallback callback;
+    /** The backing item stack. */
     protected final ItemStack item;
+    /** This element's stable identity, stamped onto the display item. */
+    protected final UUID id;
 
     /**
      * @param item the item to display
@@ -27,6 +33,7 @@ public class GuiElement implements IGuiElement {
     public GuiElement(ItemStack item, ClickCallback callback) {
         this.item = item;
         this.callback = callback;
+        this.id = UUID.randomUUID();
     }
 
     /**
@@ -123,6 +130,11 @@ public class GuiElement implements IGuiElement {
     @Override
     public ClickCallback getCallback() {
         return this.callback;
+    }
+
+    @Override
+    public UUID getId() {
+        return this.id;
     }
 
     @Override

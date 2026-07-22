@@ -52,7 +52,7 @@ public interface IGuiBuilder<T extends IGuiBuilder<T, G>, G extends IGui<G>> {
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    T setOnTick(final @NotNull IGui.Callback<GuiTickEvent<G>> onTick);
+    T setOnTick(final @NotNull IGui.Callback<GuiTickEvent> onTick);
 
     /**
      * Sets a global click callback run for every click in the GUI, before per-slot callbacks.

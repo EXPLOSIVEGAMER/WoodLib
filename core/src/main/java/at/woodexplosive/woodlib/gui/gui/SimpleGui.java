@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.event.inventory.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -25,8 +26,19 @@ import org.jspecify.annotations.NonNull;
  */
 public class SimpleGui extends AbstractGui<SimpleGui> {
 
-    protected SimpleGui(Component title, int size, InventoryType type, Callback<InventoryCloseEvent> onClose, Callback<InventoryOpenEvent> onOpen, Callback<InventoryDragEvent> onDrag,
-                        Callback<GuiTickEvent<SimpleGui>> onTick, IGuiElement.ClickCallback onClickGlobal, boolean playerManipulation) {
+    /**
+     * @param title the inventory title
+     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose the close callback
+     * @param onOpen the open callback
+     * @param onDrag the drag callback
+     * @param onTick the per-tick callback
+     * @param onClickGlobal the global click callback
+     * @param playerManipulation {@code true} to allow the player to move items in the inventory
+     */
+    protected SimpleGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
+                        @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation) {
         super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
     }
 
@@ -62,15 +74,23 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
         private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
         private Callback<InventoryOpenEvent> onOpen = IGui.emptyCallback();
         private Callback<InventoryDragEvent> onDrag = IGui.emptyCallback();
-        private Callback<GuiTickEvent<SimpleGui>> onTick = IGui.emptyCallback();
+        private Callback<GuiTickEvent> onTick = IGui.emptyCallback();
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
+        /**
+         * @param title the inventory title
+         * @param size the inventory size (multiple of 9)
+         */
         protected Builder(Component title, int size) {
             this.title = title;
             this.size = size;
             this.type = null;
         }
 
+        /**
+         * @param title the inventory title
+         * @param type the inventory type (its default size is used)
+         */
         protected Builder(Component title, InventoryType type) {
             this.title = title;
             this.size = type.getDefaultSize();
@@ -96,7 +116,7 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
         }
 
         @Override
-        public Builder setOnTick(@NotNull IGui.Callback<GuiTickEvent<SimpleGui>> onTick) {
+        public Builder setOnTick(@NotNull IGui.Callback<GuiTickEvent> onTick) {
             this.onTick = onTick;
             return this;
         }

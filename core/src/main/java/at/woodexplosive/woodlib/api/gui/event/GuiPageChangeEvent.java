@@ -1,5 +1,6 @@
 package at.woodexplosive.woodlib.api.gui.event;
 
+import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import at.woodexplosive.woodlib.api.gui.gui.IPagedGui;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -8,10 +9,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Fired when an {@link IPagedGui} is about to change its page. Cancelling the event prevents the
  * page change.
- *
- * @param <T> the concrete paged-GUI type
  */
-public class GuiPageChangeEvent<T extends IPagedGui<T>> extends GuiEvent<T> implements Cancellable {
+public class GuiPageChangeEvent extends GuiEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final int maxPage;
@@ -26,7 +25,7 @@ public class GuiPageChangeEvent<T extends IPagedGui<T>> extends GuiEvent<T> impl
      * @param oldPage the page before the change
      * @param newPage the page being switched to
      */
-    public GuiPageChangeEvent(@NotNull T gui, int maxPage, int oldPage, int newPage) {
+    public GuiPageChangeEvent(@NotNull IGui<?> gui, int maxPage, int oldPage, int newPage) {
         super(gui);
         this.maxPage = maxPage;
         this.oldPage = oldPage;

@@ -41,23 +41,45 @@ import java.util.List;
 public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         implements ITabbedGui<SimpleTabbedPagedGui>, IPagedGui<SimpleTabbedPagedGui> {
 
+    /** The tabs of this GUI, in order. */
     private final List<ITab> tabs = new ArrayList<>();
+    /** The slot indices the tab buttons are rendered into. */
     private final List<Integer> tabSlots;
+    /** The slot indices the active tab's page content is rendered into. */
     private final List<Integer> pageSlots;
 
-    protected final Callback<GuiPageChangeEvent<SimpleTabbedPagedGui>> onPageChange;
-    protected final Callback<GuiTabChangeEvent<SimpleTabbedPagedGui>> onTabChange;
+    /** Callback run when the page changes; returning {@code true} cancels the change. */
+    protected final Callback<GuiPageChangeEvent> onPageChange;
+    /** Callback run when the active tab changes; returning {@code true} cancels the change. */
+    protected final Callback<GuiTabChangeEvent> onTabChange;
 
+    /** The currently active tab, or {@code null} if no tab has been added yet. */
     private ITab activeTab;
+    /** The current (0-based) page index within the active tab. */
     private int page;
 
-    protected SimpleTabbedPagedGui(Component title, int size, InventoryType type,
-                                   Callback<InventoryCloseEvent> onClose, Callback<InventoryOpenEvent> onOpen,
-                                   Callback<InventoryDragEvent> onDrag, Callback<GuiTickEvent<SimpleTabbedPagedGui>> onTick,
-                                   IGuiElement.ClickCallback onClickGlobal,
-                                   Callback<GuiPageChangeEvent<SimpleTabbedPagedGui>> onPageChange,
-                                   Callback<GuiTabChangeEvent<SimpleTabbedPagedGui>> onTabChange,
-                                   boolean playerManipulation, List<Integer> tabSlots, List<Integer> pageSlots) {
+    /**
+     * @param title the inventory title
+     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose the close callback
+     * @param onOpen the open callback
+     * @param onDrag the drag callback
+     * @param onTick the per-tick callback
+     * @param onClickGlobal the global click callback
+     * @param onPageChange the page-change callback
+     * @param onTabChange the tab-change callback
+     * @param playerManipulation {@code true} to allow the player to move items in the inventory
+     * @param tabSlots the slot indices the tab buttons are rendered into
+     * @param pageSlots the slot indices the active tab's page content is rendered into
+     */
+    protected SimpleTabbedPagedGui(@NotNull Component title, int size, @Nullable InventoryType type,
+                                   @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
+                                   @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
+                                   IGuiElement.@NotNull ClickCallback onClickGlobal,
+                                   @NotNull Callback<GuiPageChangeEvent> onPageChange,
+                                   @NotNull Callback<GuiTabChangeEvent> onTabChange,
+                                   boolean playerManipulation, @NotNull List<Integer> tabSlots, @NotNull List<Integer> pageSlots) {
 
         super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
         this.onPageChange = onPageChange;
@@ -119,7 +141,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     @Override
     public SimpleTabbedPagedGui setTab(@NonNull ITab tab) {
-        GuiTabChangeEvent<SimpleTabbedPagedGui> event = new GuiTabChangeEvent<>(this, this.activeTab, tab);
+        GuiTabChangeEvent event = new GuiTabChangeEvent(this, this.activeTab, tab);
         if (event.callEvent() && !this.onTabChange.run(event)) {
             this.activeTab = tab;
             this.page = 0;
@@ -182,7 +204,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     @Override
     public SimpleTabbedPagedGui setPage(int page) {
-        GuiPageChangeEvent<SimpleTabbedPagedGui> event = new GuiPageChangeEvent<>(this, getMaxPage(), this.page, page);
+        GuiPageChangeEvent event = new GuiPageChangeEvent(this, getMaxPage(), this.page, page);
         if (event.callEvent() && !this.onPageChange.run(event)) {
             this.page = page;
             this.redraw();
@@ -197,7 +219,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     @Override
     public SimpleTabbedPagedGui setNextPageElement(int slot, @NonNull IGuiElement element) {
-        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
+        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback(event -> {
             this.nextPage();
             return true;
         }).buildElement();
@@ -208,7 +230,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     @Override
     public SimpleTabbedPagedGui setPreviousPageElement(int slot, @NonNull IGuiElement element) {
-        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
+        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback(event -> {
             this.previousPage();
             return true;
         }).buildElement();
@@ -239,17 +261,25 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
         private Callback<InventoryOpenEvent> onOpen = IGui.emptyCallback();
         private Callback<InventoryDragEvent> onDrag = IGui.emptyCallback();
-        private Callback<GuiTickEvent<SimpleTabbedPagedGui>> onTick = IGui.emptyCallback();
-        private Callback<GuiPageChangeEvent<SimpleTabbedPagedGui>> onPageChange = IGui.emptyCallback();
-        private Callback<GuiTabChangeEvent<SimpleTabbedPagedGui>> onTabChange = IGui.emptyCallback();
+        private Callback<GuiTickEvent> onTick = IGui.emptyCallback();
+        private Callback<GuiPageChangeEvent> onPageChange = IGui.emptyCallback();
+        private Callback<GuiTabChangeEvent> onTabChange = IGui.emptyCallback();
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
+        /**
+         * @param title the inventory title
+         * @param size the inventory size (multiple of 9)
+         */
         public Builder(Component title, int size) {
             this.title = title;
             this.size = size;
             this.type = null;
         }
 
+        /**
+         * @param title the inventory title
+         * @param type the inventory type (its default size is used)
+         */
         public Builder(Component title, InventoryType type) {
             this.title = title;
             this.size = type.getDefaultSize();
@@ -275,7 +305,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public Builder setOnTick(@NotNull Callback<GuiTickEvent<SimpleTabbedPagedGui>> onTick) {
+        public Builder setOnTick(@NotNull Callback<GuiTickEvent> onTick) {
             this.onTick = onTick;
             return this;
         }
@@ -401,13 +431,13 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public Builder onPageChange(@NotNull Callback<GuiPageChangeEvent<SimpleTabbedPagedGui>> onPageChange) {
+        public Builder onPageChange(@NotNull Callback<GuiPageChangeEvent> onPageChange) {
             this.onPageChange = onPageChange;
             return this;
         }
 
         @Override
-        public Builder onTabChange(@NotNull Callback<GuiTabChangeEvent<SimpleTabbedPagedGui>> onTabChange) {
+        public Builder onTabChange(@NotNull Callback<GuiTabChangeEvent> onTabChange) {
             this.onTabChange = onTabChange;
             return this;
         }

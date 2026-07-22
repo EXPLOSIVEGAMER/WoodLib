@@ -20,6 +20,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.inventory.meta.components.CustomModelDataComponent;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.profile.PlayerTextures;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,10 +32,23 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * Shared fluent builder for configuring an {@link ItemStack} (display name, lore, enchantments,
+ * attributes, persistent data, skull textures, etc.) via {@link ItemMeta}. Concrete subclasses (e.g.
+ * {@link at.woodexplosive.woodlib.item.ItemBuilder}, {@link at.woodexplosive.woodlib.gui.element.GuiElementBuilder})
+ * supply the factories used by {@link #of(Material, int, Supplier)} and
+ * {@link #copyOf(ItemStack, Supplier)}; {@link #build()} returns a copy of the configured stack.
+ *
+ * @param <SELF> the concrete builder type, for fluent self-returning methods (CRTP)
+ */
 public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>> {
 
     protected static final MiniMessage MM = MiniMessage.miniMessage();
 
+    /**
+     * Casts this builder to its concrete type, for fluent self-returning methods.
+     * @return this builder as {@code SELF}
+     */
     @SuppressWarnings("unchecked")
     @Contract(pure = true)
     protected final SELF self() {
@@ -87,6 +101,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
         return of(material, 1, factory);
     }
 
+    /** The ItemStack being configured; mutated in place by the fluent setters. */
     protected ItemStack item;
 
     /**
@@ -429,7 +444,11 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
         this.item.editMeta(SkullMeta.class, m -> {
             try {
                 PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), null);
-                profile.getTextures().setSkin(URI.create(url).toURL());
+                // getTextures() returns a snapshot copy, not a live view - the edited copy must be
+                // written back via setTextures(), otherwise the profile keeps no texture property at all.
+                PlayerTextures textures = profile.getTextures();
+                textures.setSkin(URI.create(url).toURL());
+                profile.setTextures(textures);
                 m.setPlayerProfile(profile);
             } catch (MalformedURLException e) {
                 WoodLib.logger().error("Skull URL is Malformed", e);

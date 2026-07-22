@@ -5,7 +5,6 @@ import at.woodexplosive.woodlib.api.gui.event.GuiPageChangeEvent;
 import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import at.woodexplosive.woodlib.api.gui.gui.IPagedGui;
-import at.woodexplosive.woodlib.api.gui.gui.Listener.IPagedGuiListener;
 import at.woodexplosive.woodlib.api.gui.gui.builder.IPagedGuiBuilder;
 import at.woodexplosive.woodlib.gui.element.GuiElementBuilder;
 import net.kyori.adventure.text.Component;
@@ -29,19 +28,36 @@ import java.util.*;
  * next/previous controls, then open it. Opening (re)populates the current page automatically.
  */
 public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPagedGui<SimplePagedGui> {
+    /** The slot indices that page elements are laid out into. */
     private final List<Integer> pageSlots;
 
-    protected final Callback<GuiPageChangeEvent<SimplePagedGui>> onPageChange;
+    /** Callback run when the page changes; returning {@code true} cancels the change. */
+    protected final Callback<GuiPageChangeEvent> onPageChange;
 
+    /** Backing list of all page elements (across every page). */
     private LinkedList<IGuiElement> pageElements = new LinkedList<>();
 
+    /** The current (0-based) page index. */
     private int page;
 
-    protected SimplePagedGui(Component title, int size, InventoryType type, Callback<InventoryCloseEvent> onClose,
-                             Callback<InventoryOpenEvent> onOpen, Callback<InventoryDragEvent> onDrag,
-                             Callback<GuiTickEvent<SimplePagedGui>> onTick, IGuiElement.ClickCallback onClickGlobal,
-                             Callback<GuiPageChangeEvent<SimplePagedGui>> onPageChange,
-                             boolean playerManipulation, List<Integer> pageSlots) {
+    /**
+     * @param title the inventory title
+     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose the close callback
+     * @param onOpen the open callback
+     * @param onDrag the drag callback
+     * @param onTick the per-tick callback
+     * @param onClickGlobal the global click callback
+     * @param onPageChange the page-change callback
+     * @param playerManipulation {@code true} to allow the player to move items in the inventory
+     * @param pageSlots the slot indices that page elements are laid out into
+     */
+    protected SimplePagedGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose,
+                             @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
+                             @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal,
+                             @NotNull Callback<GuiPageChangeEvent> onPageChange,
+                             boolean playerManipulation, @NotNull List<Integer> pageSlots) {
 
         super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
         this.onPageChange = onPageChange;
@@ -73,7 +89,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
     @Override
     public SimplePagedGui setPage(int page) {
-        GuiPageChangeEvent<SimplePagedGui> event = new GuiPageChangeEvent<>(this, getMaxPage(), this.page, page);
+        GuiPageChangeEvent event = new GuiPageChangeEvent(this, getMaxPage(), this.page, page);
         if (event.callEvent() && !this.onPageChange.run(event)) {
             this.page = page;
             this.redraw();
@@ -128,7 +144,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
     @Override
     public SimplePagedGui setNextPageElement(int slot, @NonNull IGuiElement element) {
-        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
+        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback(event -> {
             this.nextPage();
             return true;
         }).buildElement();
@@ -139,7 +155,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
     @Override
     public SimplePagedGui setPreviousPageElement(int slot, @NonNull IGuiElement element) {
-        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
+        if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback(event -> {
             this.previousPage();
             return true;
         }).buildElement();
@@ -167,10 +183,14 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
         private Callback<InventoryOpenEvent> onOpen = IGui.emptyCallback();
         private Callback<InventoryDragEvent> onDrag = IGui.emptyCallback();
-        private Callback<GuiTickEvent<SimplePagedGui>> onTick = IGui.emptyCallback();
-        private Callback<GuiPageChangeEvent<SimplePagedGui>> onPageChange = IGui.emptyCallback();
+        private Callback<GuiTickEvent> onTick = IGui.emptyCallback();
+        private Callback<GuiPageChangeEvent> onPageChange = IGui.emptyCallback();
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
+        /**
+         * @param title the inventory title
+         * @param size the inventory size (multiple of 9); every slot defaults to a page slot
+         */
         public Builder(Component title, int size) {
             this.title = title;
             this.size = size;
@@ -179,6 +199,10 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
             for (int i = 0; i < size; i++) pageSlots.add(i);
         }
 
+        /**
+         * @param title the inventory title
+         * @param type the inventory type (its default size is used); every slot defaults to a page slot
+         */
         public Builder(Component title, InventoryType type) {
             this.title = title;
             this.size = type.getDefaultSize();
@@ -206,7 +230,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         }
 
         @Override
-        public Builder setOnTick(@NotNull IGui.Callback<GuiTickEvent<SimplePagedGui>> onTick) {
+        public Builder setOnTick(@NotNull IGui.Callback<GuiTickEvent> onTick) {
             this.onTick = onTick;
             return this;
         }
@@ -219,7 +243,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
 
         @Override
-        public Builder onPageChange(@NotNull Callback<GuiPageChangeEvent<SimplePagedGui>> onPageChange) {
+        public Builder onPageChange(@NotNull Callback<GuiPageChangeEvent> onPageChange) {
             this.onPageChange = onPageChange;
             return this;
         }
@@ -264,9 +288,5 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         public @NonNull SimplePagedGui build() {
             return new SimplePagedGui(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, onPageChange, playerManipulation, pageSlots);
         }
-    }
-
-    /** Paged-GUI listener variant; inherits all handling from {@link AbstractGui.GuiListener}. */
-    public static class GuiListener extends AbstractGui.GuiListener implements IPagedGuiListener {
     }
 }

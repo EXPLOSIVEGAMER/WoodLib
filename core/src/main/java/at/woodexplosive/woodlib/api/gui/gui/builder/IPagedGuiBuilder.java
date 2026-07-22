@@ -94,5 +94,5 @@ public interface IPagedGuiBuilder<T extends IPagedGuiBuilder<T, G>, G extends IP
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    T onPageChange(@NotNull IGui.Callback<GuiPageChangeEvent<G>> onPageChange);
+    T onPageChange(@NotNull IGui.Callback<GuiPageChangeEvent> onPageChange);
 }

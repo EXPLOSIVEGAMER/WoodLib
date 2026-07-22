@@ -1,6 +1,7 @@
 package at.woodexplosive.woodlib.api.gui.event;
 
 import at.woodexplosive.woodlib.api.gui.element.ITab;
+import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import at.woodexplosive.woodlib.api.gui.gui.ITabbedGui;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
@@ -9,10 +10,8 @@ import org.jetbrains.annotations.Nullable;
 
 /**
  * Fired when an {@link ITabbedGui} is about to change its active tab. Cancelling prevents the change.
- *
- * @param <T> the concrete tabbed-GUI type
  */
-public class GuiTabChangeEvent<T extends ITabbedGui<T>> extends GuiEvent<T> implements Cancellable {
+public class GuiTabChangeEvent extends GuiEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final ITab oldTab;
@@ -25,7 +24,7 @@ public class GuiTabChangeEvent<T extends ITabbedGui<T>> extends GuiEvent<T> impl
      * @param oldTab the tab active before the change (may be {@code null})
      * @param newTab the tab being switched to
      */
-    public GuiTabChangeEvent(@NotNull T gui, @Nullable ITab oldTab, @NotNull ITab newTab) {
+    public GuiTabChangeEvent(@NotNull IGui<?> gui, @Nullable ITab oldTab, @NotNull ITab newTab) {
         super(gui);
         this.oldTab = oldTab;
         this.newTab = newTab;

@@ -9,6 +9,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      * @return the title
      */
     @Contract(pure = true)
-    Component getTitle();
+    @NotNull Component getTitle();
 
     /**
      * Stores the element at the given slot index.
@@ -120,7 +121,7 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      * @param player The player
      * @return The newly opened {@link InventoryView}
      */
-    InventoryView open(Player player);
+    @Nullable InventoryView open(@NotNull Player player);
 
     /** Starts the per-tick update task for this GUI (fires {@link at.woodexplosive.woodlib.api.gui.event.GuiTickEvent} every tick). */
     void startTicking();
@@ -133,10 +134,11 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      * @return the viewing {@link Player}, or {@code null} if never opened
      */
     @Contract(pure = true)
-    Player getPlayer();
+    @Nullable Player getPlayer();
 
     /** Re-opens the GUI for its current {@link #getPlayer() player} to reflect changed contents. */
     default void redraw() {
+        if (this.getPlayer() == null) return;
         this.open(this.getPlayer());
     }
 
@@ -144,24 +146,26 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      * A cancellable callback bound to a specific inventory {@link Event}.
      * @param <T> the event type
      */
+    @FunctionalInterface
     interface Callback<T extends Event> {
         /**
          * Runs the callback and returns success as boolean
          * @param event Inventory Event of the Callback
          * @return if the event should be canceled
          */
-        boolean run(T event);
+        boolean run(@NotNull T event);
     }
 
     /**
      * A callback invoked once per server tick while the GUI is open.
      * @param <T> the concrete GUI type
      */
+    @FunctionalInterface
     interface TickCallback<T extends IGui<T>> {
         /**
          * Runs the tick logic.
          * @param gui the ticking GUI
          */
-        void run(T gui);
+        void run(@NotNull T gui);
     }
 }

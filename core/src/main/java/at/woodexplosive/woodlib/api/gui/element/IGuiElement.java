@@ -64,6 +64,7 @@ public interface IGuiElement {
     }
 
     /** Callback invoked when an element (or slot) is clicked inside a GUI. */
+    @FunctionalInterface
     interface ClickCallback {
 
         /**
@@ -73,7 +74,7 @@ public interface IGuiElement {
          * @param element the clicked {@link IGuiElement}, or {@code null} for a bare slot callback
          * @param clickType the {@link ClickType} of the click
          * @param action the {@link InventoryAction} the click would trigger
-         * @return {@code true} if the click event should be cancelled
+         * @return {@code true} if the click event should be canceled
          */
         boolean click(@NotNull InventoryClickEvent event, @NotNull IGui<?> clickedGui, @Nullable IGuiElement element, @NotNull ClickType clickType, @NotNull InventoryAction action);
     }

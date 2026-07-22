@@ -4,6 +4,8 @@ import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.element.ITab;
 import at.woodexplosive.woodlib.gui.element.GuiElementBuilder;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,7 +28,7 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
      * @return the tabs
      */
     @Contract(pure = true)
-    List<ITab> getTabs();
+    @NotNull List<ITab> getTabs();
 
     /**
      * Appends a tab. The GUI's {@link #getContentSlots() content slots} are assigned to it, and it
@@ -34,21 +36,21 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
      * @param tab the tab to add
      * @return this GUI for chaining
      */
-    T addTab(ITab tab);
+    T addTab(@NotNull ITab tab);
 
     /**
      * Appends multiple tabs.
      * @param tabs the tabs to add
      * @return this GUI for chaining
      */
-    T addTabs(Collection<? extends ITab> tabs);
+    T addTabs(@NotNull Collection<? extends ITab> tabs);
 
     /**
      * Varargs variant of {@link #addTabs(Collection)}.
      * @param tabs the tabs to add
      * @return this GUI for chaining
      */
-    default T addTabs(ITab... tabs) {
+    default T addTabs(@NotNull ITab... tabs) {
         return this.addTabs(List.of(tabs));
     }
 
@@ -57,7 +59,7 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
      * @return the active tab, or {@code null} if the GUI has no tabs
      */
     @Contract(pure = true)
-    ITab getTab();
+    @Nullable ITab getTab();
 
     /**
      * Switches to the given tab (fires a
@@ -65,21 +67,21 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
      * @param tab the tab to activate
      * @return this GUI for chaining
      */
-    T setTab(ITab tab);
+    T setTab(@NotNull ITab tab);
 
     /**
      * Returns the slot indices the tab buttons are rendered into.
      * @return the tab slots
      */
     @Contract(pure = true)
-    List<Integer> getTabSlots();
+    @NotNull List<Integer> getTabSlots();
 
     /**
      * Returns the slot indices the active tab's content is rendered into.
      * @return the content slots
      */
     @Contract(pure = true)
-    List<Integer> getContentSlots();
+    @NotNull List<Integer> getContentSlots();
 
     /**
      * Returns the index of the active tab within {@link #getTabs()}.

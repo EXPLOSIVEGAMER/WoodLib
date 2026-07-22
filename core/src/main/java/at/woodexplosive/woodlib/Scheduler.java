@@ -1,6 +1,5 @@
-package at.woodexplosive.woodlib.scheduler;
+package at.woodexplosive.woodlib;
 
-import at.woodexplosive.woodlib.WoodLib;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -39,7 +38,7 @@ public final class Scheduler {
     // ---- Lifecycle (called by WoodLib.init / WoodLib.disable) ----
 
     /** Starts the millisecond executor. Idempotent; called by {@link WoodLib#init}. */
-    public static void start() {
+    static void start() {
         if (exec != null && !exec.isShutdown()) return;
         exec = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "WoodLib-Scheduler");
@@ -49,7 +48,7 @@ public final class Scheduler {
     }
 
     /** Stops the millisecond executor and discards pending tasks. Called by {@link WoodLib#disable}. */
-    public static void stop() {
+    static void stop() {
         if (exec == null) return;
         exec.shutdownNow();
         exec = null;

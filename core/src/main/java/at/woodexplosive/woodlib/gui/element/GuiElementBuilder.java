@@ -6,6 +6,7 @@ import at.woodexplosive.woodlib.api.item.AbstractItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Builder for {@link GuiElement}s. Combines the full item-configuration API of
@@ -45,6 +46,16 @@ public class GuiElementBuilder extends AbstractItemBuilder<GuiElementBuilder> im
     }
 
     /**
+     * Creates a builder wrapping the given item stack directly (not cloned).
+     * @param itemStack the item stack to wrap
+     * @return a new builder
+     */
+    @Contract(value = "_ -> new", pure = true)
+    public static GuiElementBuilder of(ItemStack itemStack) {
+        return new GuiElementBuilder(itemStack);
+    }
+
+    /**
      * Creates a builder from a copy of the given element's item, keeping its callback.
      * @param element the element to copy
      * @return a new builder
@@ -64,16 +75,26 @@ public class GuiElementBuilder extends AbstractItemBuilder<GuiElementBuilder> im
         return new GuiElementBuilder(itemBuilder.build());
     }
 
+    /**
+     * Creates a builder wrapping a copy of the given item stack.
+     * @param itemStack the item stack to copy
+     * @return a new builder
+     */
+    @Contract(value = "_ -> new", pure = true)
+    public static GuiElementBuilder copyOf(ItemStack itemStack) {
+        return new GuiElementBuilder(itemStack.clone());
+    }
+
     @Contract(value = "_ -> this")
     @Override
-    public GuiElementBuilder setCallback(IGuiElement.ClickCallback callback) {
+    public GuiElementBuilder setCallback(IGuiElement.@NonNull ClickCallback callback) {
         this.callback = callback;
         return this;
     }
 
     @Contract(value = "-> new", pure = true)
     @Override
-    public IGuiElement buildElement() {
+    public @NonNull GuiElement buildElement() {
         return new GuiElement(this.build(), this.callback);
     }
 }

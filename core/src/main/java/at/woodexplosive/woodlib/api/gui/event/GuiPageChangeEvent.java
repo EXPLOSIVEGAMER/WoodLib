@@ -26,7 +26,7 @@ public class GuiPageChangeEvent<T extends IPagedGui<T>> extends GuiEvent<T> impl
      * @param oldPage the page before the change
      * @param newPage the page being switched to
      */
-    public GuiPageChangeEvent(T gui, int maxPage, int oldPage, int newPage) {
+    public GuiPageChangeEvent(@NotNull T gui, int maxPage, int oldPage, int newPage) {
         super(gui);
         this.maxPage = maxPage;
         this.oldPage = oldPage;

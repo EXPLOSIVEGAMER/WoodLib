@@ -16,6 +16,8 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +116,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     }
 
     @Override
-    public Component getTitle() {
+    public @NonNull Component getTitle() {
         return this.title;
     }
 
@@ -135,7 +137,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     }
 
     @Override
-    public InventoryView open(Player player) {
+    public @Nullable InventoryView open(@NonNull Player player) {
         this.player = player;
         InventoryView view = player.openInventory(this.inventory);
         startTicking();
@@ -174,7 +176,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
         @EventHandler
         @Override
-        public void onInventoryClose(InventoryCloseEvent event) {
+        public void onInventoryClose(@NonNull InventoryCloseEvent event) {
             if (!(event.getInventory().getHolder() instanceof AbstractGui<?> gui)) return;
             gui.stopTicking();
             gui.onClose.run(event);
@@ -182,7 +184,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
         @EventHandler(ignoreCancelled = true)
         @Override
-        public void onInventoryOpen(InventoryOpenEvent event) {
+        public void onInventoryOpen(@NonNull InventoryOpenEvent event) {
             if (event.getInventory().getHolder() instanceof AbstractGui<?> gui) {
                 boolean cancel = gui.onOpen.run(event);
                 event.setCancelled(cancel);
@@ -191,7 +193,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
         @EventHandler(ignoreCancelled = true)
         @Override
-        public void onInventoryClick(InventoryClickEvent event) {
+        public void onInventoryClick(@NonNull InventoryClickEvent event) {
             if (event.getInventory().getHolder() instanceof AbstractGui<?> gui) {
                 boolean cancel = !gui.playerManipulation;
 
@@ -211,7 +213,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
         @EventHandler(ignoreCancelled = true)
         @Override
-        public void onInventoryDrag(InventoryDragEvent event) {
+        public void onInventoryDrag(@NonNull InventoryDragEvent event) {
             if (event.getInventory().getHolder() instanceof AbstractGui<?> gui) {
                 boolean cancel = gui.onDrag.run(event);
                 event.setCancelled(cancel);

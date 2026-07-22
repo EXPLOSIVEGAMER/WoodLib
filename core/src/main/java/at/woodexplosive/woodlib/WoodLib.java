@@ -1,7 +1,6 @@
 package at.woodexplosive.woodlib;
 
 import at.woodexplosive.woodlib.gui.gui.AbstractGui;
-import at.woodexplosive.woodlib.scheduler.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,7 +34,7 @@ public final class WoodLib {
 
     /**
      * Initializes the library and binds it to the given host plugin. Registers the GUI listener and
-     * starts the {@link at.woodexplosive.woodlib.scheduler.Scheduler}. Call once from the host's
+     * starts the {@link Scheduler}. Call once from the host's
      * {@code onEnable}.
      *
      * @param host the plugin that owns the library at runtime
@@ -51,7 +50,7 @@ public final class WoodLib {
     }
 
     /**
-     * Tears the library down and stops the {@link at.woodexplosive.woodlib.scheduler.Scheduler}.
+     * Tears the library down and stops the {@link Scheduler}.
      * Call from the host's {@code onDisable}. Does nothing if the library was never initialized.
      */
     public static void disable() {

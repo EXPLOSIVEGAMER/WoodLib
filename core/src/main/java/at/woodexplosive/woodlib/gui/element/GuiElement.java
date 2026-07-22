@@ -57,7 +57,7 @@ public class GuiElement implements IGuiElement {
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static GuiElement decoElement(Material material, int amount, Component displayName) {
-        return (GuiElement) new GuiElementBuilder(material, amount).displayName(displayName).buildElement();
+        return new GuiElementBuilder(material, amount).displayName(displayName).buildElement();
     }
 
     /**
@@ -98,7 +98,7 @@ public class GuiElement implements IGuiElement {
      */
     @Contract(value = "_ -> new", pure = true)
     public static GuiElement decoElement(Material material) {
-        return (GuiElement) new GuiElementBuilder(material).buildElement();
+        return new GuiElementBuilder(material).buildElement();
     }
 
     /**
@@ -108,7 +108,7 @@ public class GuiElement implements IGuiElement {
      */
     @Contract(value = "_ -> new", pure = true)
     public static GuiElement decoElement(AbstractItemBuilder<?> itemBuilder) {
-        return (GuiElement) GuiElementBuilder.copyOf(itemBuilder).buildElement();
+        return GuiElementBuilder.copyOf(itemBuilder).buildElement();
     }
 
     /**
@@ -127,7 +127,7 @@ public class GuiElement implements IGuiElement {
 
     @Override
     public GuiElement copy() {
-        return (GuiElement) GuiElementBuilder.copyOf(this).buildElement();
+        return GuiElementBuilder.copyOf(this).buildElement();
     }
 
     @Override

@@ -3,6 +3,7 @@ package at.woodexplosive.woodlib.api.gui.gui;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.gui.element.GuiElement;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -26,7 +27,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return the page elements
      */
     @Contract(value = "-> _", pure = true)
-    LinkedList<IGuiElement> getPageElements();
+    @NotNull LinkedList<IGuiElement> getPageElements();
 
     /**
      * Appends a single element to the page elements.
@@ -34,7 +35,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    T addPageElement(IGuiElement element);
+    T addPageElement(@NotNull IGuiElement element);
 
     /**
      * Appends multiple elements to the page elements.
@@ -42,7 +43,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    T addPageElements(Collection<? extends IGuiElement> elements);
+    T addPageElements(@NotNull Collection<? extends IGuiElement> elements);
 
     /**
      * Varargs variant of {@link #addPageElements(Collection)}.
@@ -50,7 +51,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    default T addPageElements(IGuiElement... elements) {
+    default T addPageElements(@NotNull IGuiElement... elements) {
         return this.addPageElements(List.of(elements));
     }
 
@@ -60,7 +61,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    T removePageElement(IGuiElement element);
+    T removePageElement(@NotNull IGuiElement element);
 
     /**
      * Removes multiple elements from the page elements.
@@ -68,7 +69,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    T removePageElements(Collection<? extends IGuiElement> elements);
+    T removePageElements(@NotNull Collection<? extends IGuiElement> elements);
 
     /**
      * Varargs variant of {@link #removePageElements(Collection)}.
@@ -76,7 +77,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    default T removePageElements(IGuiElement... elements) {
+    default T removePageElements(@NotNull IGuiElement... elements) {
         return this.removePageElements(List.of(elements));
     }
 
@@ -86,7 +87,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_ -> this")
-    T setPageElement(LinkedList<? extends IGuiElement> elements);
+    T setPageElement(@NotNull LinkedList<? extends IGuiElement> elements);
 
     /**
      * Returns the current page index (0-based).
@@ -108,7 +109,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return the page slots
      */
     @Contract(value = "-> _", pure = true)
-    List<Integer> getPageSlots();
+    @NotNull List<Integer> getPageSlots();
 
     /**
      * Places an element at {@code slot} that advances to the next page when clicked. If the element
@@ -118,7 +119,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_, _ -> this")
-    T setNextPageElement(int slot, IGuiElement element);
+    T setNextPageElement(int slot, @NotNull IGuiElement element);
 
     /**
      * Places an element at {@code slot} that goes back to the previous page when clicked. If the
@@ -128,7 +129,7 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      * @return this GUI for chaining
      */
     @Contract(value = "_, _ -> this")
-    T setPreviousPageElement(int slot, IGuiElement element);
+    T setPreviousPageElement(int slot, @NotNull IGuiElement element);
 
     /** Clears the page slots and fills them with the elements of the current page. */
     default void populatePage() {

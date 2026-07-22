@@ -16,6 +16,8 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,12 +74,12 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
     }
 
     @Override
-    public List<ITab> getTabs() {
+    public @NonNull List<ITab> getTabs() {
         return this.tabs;
     }
 
     @Override
-    public SimpleTabbedGui addTab(ITab tab) {
+    public SimpleTabbedGui addTab(@NonNull ITab tab) {
         tab.setContentSlots(this.contentSlots);
         this.tabs.add(tab);
         if (this.activeTab == null) this.activeTab = tab;
@@ -85,7 +87,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
     }
 
     @Override
-    public SimpleTabbedGui addTabs(Collection<? extends ITab> tabs) {
+    public SimpleTabbedGui addTabs(@NonNull Collection<? extends ITab> tabs) {
         for (ITab tab : tabs) this.addTab(tab);
         return this;
     }
@@ -96,7 +98,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
     }
 
     @Override
-    public SimpleTabbedGui setTab(ITab tab) {
+    public SimpleTabbedGui setTab(@NonNull ITab tab) {
         GuiTabChangeEvent<SimpleTabbedGui> event = new GuiTabChangeEvent<>(this, this.activeTab, tab);
         if (event.callEvent() && !this.onTabChange.run(event)) {
             this.activeTab = tab;
@@ -106,17 +108,17 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
     }
 
     @Override
-    public List<Integer> getTabSlots() {
+    public @NonNull List<Integer> getTabSlots() {
         return this.tabSlots;
     }
 
     @Override
-    public List<Integer> getContentSlots() {
+    public @NonNull List<Integer> getContentSlots() {
         return this.contentSlots;
     }
 
     @Override
-    public InventoryView open(Player player) {
+    public @Nullable InventoryView open(@NonNull Player player) {
         this.populateTabs();
         this.populateContent();
         return super.open(player);
@@ -190,43 +192,67 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         }
 
         @Override
-        public Builder setContentSlots(List<Integer> slots) {
+        public Builder setContentSlots(@NonNull List<Integer> slots) {
             this.contentSlots = slots;
             return this;
         }
 
         @Override
-        public Builder addContentSlot(int slot) {
+        public Builder addContentSlot(Integer slot) {
             this.contentSlots.add(slot);
             return this;
         }
 
         @Override
-        public Builder addContentSlots(Collection<Integer> slots) {
+        public Builder addContentSlots(@NonNull Collection<Integer> slots) {
             this.contentSlots.addAll(slots);
             return this;
         }
 
         @Override
-        public Builder setTabSlots(List<Integer> slots) {
+        public Builder removeContentSlot(Integer slot) {
+            this.contentSlots.remove(slot);
+            return this;
+        }
+
+        @Override
+        public Builder removeContentSlots(@NonNull Collection<Integer> slots) {
+            this.contentSlots.removeAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder setTabSlots(@NonNull List<Integer> slots) {
             this.tabSlots = slots;
             return this;
         }
 
         @Override
-        public Builder addTabSlot(int slot) {
+        public Builder addTabSlot(Integer slot) {
             this.tabSlots.add(slot);
             return this;
         }
 
         @Override
-        public Builder addTabSlots(Collection<Integer> slots) {
+        public Builder addTabSlots(@NonNull Collection<Integer> slots) {
             this.tabSlots.addAll(slots);
             return this;
         }
 
         @Override
-        public Builder addTab(ITab tab) {
+        public Builder removeTabSlot(Integer slot) {
+            this.tabSlots.remove(slot);
+            return this;
+        }
+
+        @Override
+        public Builder removeTabSlots(@NonNull Collection<Integer> slots) {
+            this.tabSlots.removeAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder addTab(@NonNull ITab tab) {
             this.tabs.add(tab);
             return this;
         }
@@ -238,7 +264,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         }
 
         @Override
-        public SimpleTabbedGui build() {
+        public @NonNull SimpleTabbedGui build() {
             SimpleTabbedGui gui = new SimpleTabbedGui(title, size, type, onClose, onOpen, onDrag, onTick,
                     onClickGlobal, onTabChange, playerManipulation, tabSlots, contentSlots);
             for (ITab tab : this.tabs) gui.addTab(tab);

@@ -22,6 +22,8 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,15 +91,15 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     // ---- Tabbed ----
 
     @Override
-    public List<ITab> getTabs() {
+    public @NonNull List<ITab> getTabs() {
         return this.tabs;
     }
 
     @Override
-    public SimpleTabbedPagedGui addTab(ITab tab) {
+    public SimpleTabbedPagedGui addTab(@NonNull ITab tab) {
         if (!(tab instanceof PagedTab)) {
             WoodLib.logger().warn("SimpleTabbedPagedGui expects a PagedTab but got {} - its content will not be paged",
-                    tab == null ? "null" : tab.getClass().getSimpleName());
+                    tab.getClass().getSimpleName());
         }
         this.tabs.add(tab);
         if (this.activeTab == null) this.activeTab = tab;
@@ -105,7 +107,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     @Override
-    public SimpleTabbedPagedGui addTabs(Collection<? extends ITab> tabs) {
+    public SimpleTabbedPagedGui addTabs(@NonNull Collection<? extends ITab> tabs) {
         for (ITab tab : tabs) this.addTab(tab);
         return this;
     }
@@ -116,7 +118,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     @Override
-    public SimpleTabbedPagedGui setTab(ITab tab) {
+    public SimpleTabbedPagedGui setTab(@NonNull ITab tab) {
         GuiTabChangeEvent<SimpleTabbedPagedGui> event = new GuiTabChangeEvent<>(this, this.activeTab, tab);
         if (event.callEvent() && !this.onTabChange.run(event)) {
             this.activeTab = tab;
@@ -127,48 +129,48 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     @Override
-    public List<Integer> getTabSlots() {
+    public @NonNull List<Integer> getTabSlots() {
         return this.tabSlots;
     }
 
     @Override
-    public List<Integer> getContentSlots() {
+    public @NonNull List<Integer> getContentSlots() {
         return this.pageSlots;
     }
 
     // ---- Paged (acts on the active tab's own element list) ----
 
     @Override
-    public LinkedList<IGuiElement> getPageElements() {
+    public @NonNull LinkedList<IGuiElement> getPageElements() {
         return this.activeTab instanceof PagedTab pagedTab ? pagedTab.getPageElements() : new LinkedList<>();
     }
 
     @Override
-    public SimpleTabbedPagedGui addPageElement(IGuiElement element) {
+    public SimpleTabbedPagedGui addPageElement(@NonNull IGuiElement element) {
         if (this.activeTab instanceof PagedTab pagedTab) pagedTab.addPageElement(element);
         return this;
     }
 
     @Override
-    public SimpleTabbedPagedGui addPageElements(Collection<? extends IGuiElement> elements) {
+    public SimpleTabbedPagedGui addPageElements(@NonNull Collection<? extends IGuiElement> elements) {
         if (this.activeTab instanceof PagedTab pagedTab) pagedTab.addPageElements(elements);
         return this;
     }
 
     @Override
-    public SimpleTabbedPagedGui removePageElement(IGuiElement element) {
+    public SimpleTabbedPagedGui removePageElement(@NonNull IGuiElement element) {
         if (this.activeTab instanceof PagedTab pagedTab) pagedTab.removePageElement(element);
         return this;
     }
 
     @Override
-    public SimpleTabbedPagedGui removePageElements(Collection<? extends IGuiElement> elements) {
+    public SimpleTabbedPagedGui removePageElements(@NonNull Collection<? extends IGuiElement> elements) {
         if (this.activeTab instanceof PagedTab pagedTab) pagedTab.removePageElements(elements);
         return this;
     }
 
     @Override
-    public SimpleTabbedPagedGui setPageElement(LinkedList<? extends IGuiElement> elements) {
+    public SimpleTabbedPagedGui setPageElement(@NonNull LinkedList<? extends IGuiElement> elements) {
         if (this.activeTab instanceof PagedTab pagedTab) pagedTab.setPageElements(elements);
         return this;
     }
@@ -189,12 +191,12 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     @Override
-    public List<Integer> getPageSlots() {
+    public @NonNull List<Integer> getPageSlots() {
         return this.pageSlots;
     }
 
     @Override
-    public SimpleTabbedPagedGui setNextPageElement(int slot, IGuiElement element) {
+    public SimpleTabbedPagedGui setNextPageElement(int slot, @NonNull IGuiElement element) {
         if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
             this.nextPage();
             return true;
@@ -205,7 +207,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     @Override
-    public SimpleTabbedPagedGui setPreviousPageElement(int slot, IGuiElement element) {
+    public SimpleTabbedPagedGui setPreviousPageElement(int slot, @NonNull IGuiElement element) {
         if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
             this.previousPage();
             return true;
@@ -216,7 +218,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     @Override
-    public InventoryView open(Player player) {
+    public @Nullable InventoryView open(@NonNull Player player) {
         this.populateTabs();
         this.populatePage();
         return super.open(player);
@@ -291,38 +293,62 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public Builder setTabSlots(List<Integer> slots) {
+        public Builder setTabSlots(@NonNull List<Integer> slots) {
             this.tabSlots = new ArrayList<>(slots);
             return this;
         }
 
         @Override
-        public Builder addTabSlot(int slot) {
+        public Builder addTabSlot(Integer slot) {
             this.tabSlots.add(slot);
             return this;
         }
 
         @Override
-        public Builder addTabSlots(Collection<Integer> slots) {
+        public Builder addTabSlots(@NonNull Collection<Integer> slots) {
             this.tabSlots.addAll(slots);
             return this;
         }
 
         @Override
-        public Builder setContentSlots(List<Integer> slots) {
+        public Builder removeTabSlot(Integer slot) {
+            this.tabSlots.remove(slot);
+            return this;
+        }
+
+        @Override
+        public Builder removeTabSlots(@NonNull Collection<Integer> slots) {
+            this.tabSlots.removeAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder setContentSlots(@NonNull List<Integer> slots) {
             this.pageSlots = new ArrayList<>(slots);
             return this;
         }
 
         @Override
-        public Builder addContentSlot(int slot) {
+        public Builder addContentSlot(Integer slot) {
             this.pageSlots.add(slot);
             return this;
         }
 
         @Override
-        public Builder addContentSlots(Collection<Integer> slots) {
+        public Builder addContentSlots(@NonNull Collection<Integer> slots) {
             this.pageSlots.addAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder removeContentSlot(Integer slot) {
+            this.pageSlots.remove(slot);
+            return this;
+        }
+
+        @Override
+        public Builder removeContentSlots(@NonNull Collection<Integer> slots) {
+            this.pageSlots.removeAll(slots);
             return this;
         }
 
@@ -333,7 +359,31 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public Builder addTab(ITab tab) {
+        public Builder addPageSlot(Integer slot) {
+            this.pageSlots.add(slot);
+            return this;
+        }
+
+        @Override
+        public Builder addPageSlots(@NonNull Collection<Integer> slots) {
+            this.pageSlots.addAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder removePageSlot(Integer slot) {
+            this.pageSlots.remove(slot);
+            return this;
+        }
+
+        @Override
+        public Builder removePageSlots(@NonNull Collection<Integer> slots) {
+            this.pageSlots.removeAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder addTab(@NonNull ITab tab) {
             this.tabs.add(tab);
             return this;
         }
@@ -363,7 +413,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public SimpleTabbedPagedGui build() {
+        public @NonNull SimpleTabbedPagedGui build() {
             SimpleTabbedPagedGui gui = new SimpleTabbedPagedGui(title, size, type, onClose, onOpen, onDrag, onTick,
                     onClickGlobal, onPageChange, onTabChange, playerManipulation, tabSlots, pageSlots);
             for (ITab tab : this.tabs) gui.addTab(tab);

@@ -3,6 +3,7 @@ package at.woodexplosive.woodlib.gui.element;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.element.ITab;
 import org.jetbrains.annotations.Contract;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +54,7 @@ public class Tab implements ITab {
     }
 
     @Override
-    public Tab setTabElement(IGuiElement element) {
+    public Tab setTabElement(@NonNull IGuiElement element) {
         this.tabElement = element;
         return this;
     }
@@ -64,7 +65,7 @@ public class Tab implements ITab {
     }
 
     @Override
-    public Tab setContentSlots(List<Integer> slots) {
+    public Tab setContentSlots(@NonNull List<Integer> slots) {
         this.contentSlots = slots;
         return this;
     }
@@ -76,7 +77,7 @@ public class Tab implements ITab {
     }
 
     @Override
-    public Tab addContentSlots(Collection<Integer> slots) {
+    public Tab addContentSlots(@NonNull Collection<Integer> slots) {
         this.contentSlots.addAll(slots);
         return this;
     }
@@ -87,26 +88,26 @@ public class Tab implements ITab {
     }
 
     @Override
-    public Tab setContentElement(int slot, IGuiElement element) {
+    public Tab setContentElement(int slot, @NonNull IGuiElement element) {
         this.contentElements.put(slot, element);
         return this;
     }
 
     @Override
-    public Tab setContentElements(Map<Integer, IGuiElement> elements) {
+    public Tab setContentElements(@NonNull Map<Integer, IGuiElement> elements) {
         this.contentElements.clear();
         this.contentElements.putAll(elements);
         return this;
     }
 
     @Override
-    public Tab removeContentElement(IGuiElement element) {
+    public Tab removeContentElement(@NonNull IGuiElement element) {
         this.contentElements.values().removeIf(e -> e == element);
         return this;
     }
 
     @Override
-    public Tab removeContentElements(Collection<? extends IGuiElement> elements) {
+    public Tab removeContentElements(@NonNull Collection<? extends IGuiElement> elements) {
         for (IGuiElement element : elements) this.removeContentElement(element);
         return this;
     }

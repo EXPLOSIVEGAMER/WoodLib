@@ -17,11 +17,13 @@ import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
 /**
- * A multi-page {@link IPagedGui}: page elements are spread across the configured page slots and
+ * A multipage {@link IPagedGui}: page elements are spread across the configured page slots and
  * navigated with page controls. Create one through {@link #builder(Component, int)}, add elements via
  * {@link #addPageElement(at.woodexplosive.woodlib.api.gui.element.IGuiElement)}, optionally place
  * next/previous controls, then open it. Opening (re)populates the current page automatically.
@@ -80,36 +82,36 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
     }
 
     @Override
-    public LinkedList<IGuiElement> getPageElements() {
+    public @NonNull LinkedList<IGuiElement> getPageElements() {
         return this.pageElements;
     }
 
     @Override
-    public SimplePagedGui addPageElement(IGuiElement element) {
+    public SimplePagedGui addPageElement(@NonNull IGuiElement element) {
         this.pageElements.add(element);
         return this;
     }
 
     @Override
-    public SimplePagedGui addPageElements(Collection<? extends IGuiElement> elements) {
+    public SimplePagedGui addPageElements(@NonNull Collection<? extends IGuiElement> elements) {
         this.pageElements.addAll(elements);
         return this;
     }
 
     @Override
-    public SimplePagedGui removePageElement(IGuiElement element) {
+    public SimplePagedGui removePageElement(@NonNull IGuiElement element) {
         this.pageElements.remove(element);
         return this;
     }
 
     @Override
-    public SimplePagedGui removePageElements(Collection<? extends IGuiElement> elements) {
+    public SimplePagedGui removePageElements(@NonNull Collection<? extends IGuiElement> elements) {
         this.pageElements.removeAll(elements);
         return this;
     }
 
     @Override
-    public SimplePagedGui setPageElement(LinkedList<? extends IGuiElement> elements) {
+    public SimplePagedGui setPageElement(@NonNull LinkedList<? extends IGuiElement> elements) {
         this.pageElements = new LinkedList<>(elements);
         return this;
     }
@@ -120,12 +122,12 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
     }
 
     @Override
-    public List<Integer> getPageSlots() {
+    public @NonNull List<Integer> getPageSlots() {
         return this.pageSlots;
     }
 
     @Override
-    public SimplePagedGui setNextPageElement(int slot, IGuiElement element) {
+    public SimplePagedGui setNextPageElement(int slot, @NonNull IGuiElement element) {
         if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
             this.nextPage();
             return true;
@@ -136,7 +138,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
     }
 
     @Override
-    public SimplePagedGui setPreviousPageElement(int slot, IGuiElement element) {
+    public SimplePagedGui setPreviousPageElement(int slot, @NonNull IGuiElement element) {
         if (!element.hasCallback()) element = GuiElementBuilder.of(element).setCallback((event, clickedGui, clickedElement, clickType, action) -> {
             this.previousPage();
             return true;
@@ -147,7 +149,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
     }
 
     @Override
-    public InventoryView open(Player player) {
+    public @Nullable InventoryView open(@NonNull Player player) {
         this.populatePage();
         return super.open(player);
     }
@@ -235,7 +237,31 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         }
 
         @Override
-        public SimplePagedGui build() {
+        public Builder addPageSlot(Integer slot) {
+            this.pageSlots.add(slot);
+            return this;
+        }
+
+        @Override
+        public Builder addPageSlots(@NonNull Collection<Integer> slots) {
+            this.pageSlots.addAll(slots);
+            return this;
+        }
+
+        @Override
+        public Builder removePageSlot(Integer slot) {
+            this.pageSlots.remove(slot);
+            return this;
+        }
+
+        @Override
+        public Builder removePageSlots(@NonNull Collection<Integer> slots) {
+            this.pageSlots.removeAll(slots);
+            return this;
+        }
+
+        @Override
+        public @NonNull SimplePagedGui build() {
             return new SimplePagedGui(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, onPageChange, playerManipulation, pageSlots);
         }
     }

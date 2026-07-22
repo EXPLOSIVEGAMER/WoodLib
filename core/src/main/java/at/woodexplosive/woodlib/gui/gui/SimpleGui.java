@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.event.inventory.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A basic single-page {@link IGui}. Create one through {@link #builder(Component, int)} (or the
@@ -113,7 +114,7 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
         }
 
         @Override
-        public SimpleGui build() {
+        public @NonNull SimpleGui build() {
             return new SimpleGui(this.title, this.size, this.type, this.onClose, this.onOpen, this.onDrag, this.onTick, this.onClickGlobal, this.playerManipulation);
         }
     }

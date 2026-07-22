@@ -51,7 +51,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return a new builder holding a copy of the given ItemStack
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <T extends AbstractItemBuilder<T>> T copyOf(ItemStack item, Supplier<T> factory) {
+    public static <T extends AbstractItemBuilder<T>> @NotNull T copyOf(@NotNull ItemStack item, @NotNull Supplier<T> factory) {
         T builder = factory.get();
         builder.item = item.clone();
         return builder;
@@ -67,7 +67,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return a new builder holding the created ItemStack
      */
     @Contract(value = "_, _, _ -> new", pure = true)
-    public static <T extends AbstractItemBuilder<T>> T of(Material material, int amount, Supplier<T> factory) {
+    public static <T extends AbstractItemBuilder<T>> @NotNull T of(@NotNull Material material, int amount, @NotNull Supplier<T> factory) {
         T builder = factory.get();
         builder.item = ItemStack.of(material, amount);
         return builder;
@@ -83,7 +83,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @see #of(Material, int, Supplier)
      */
     @Contract(value = "_, _ -> new", pure = true)
-    public static <T extends AbstractItemBuilder<T>> T of(Material material, Supplier<T> factory) {
+    public static <T extends AbstractItemBuilder<T>> @NotNull T of(@NotNull Material material, @NotNull Supplier<T> factory) {
         return of(material, 1, factory);
     }
 
@@ -97,6 +97,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param amount amount
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     public SELF amount(int amount) {
         final int a = Math.clamp(amount, 1, 99);
         if (a > this.item.getMaxStackSize()) this.item.editMeta(m -> m.setMaxStackSize(a));
@@ -110,7 +111,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param displayName The Display Name
      * @return this builder for chaining
      */
-    public SELF displayName(Component displayName) {
+    @Contract(value = "_ -> this")
+    public SELF displayName(@NotNull Component displayName) {
         this.item.editMeta(m -> m.displayName(displayName));
         return self();
     }
@@ -118,7 +120,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
     /**
      * @see #displayName(Component)
      */
-    public SELF displayName(String displayName) {
+    @Contract(value = "_ -> this")
+    public SELF displayName(@NotNull String displayName) {
         return this.displayName(MM.deserialize(displayName));
     }
 
@@ -128,7 +131,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param lore The Lore
      * @return this builder for chaining
      */
-    public SELF lore(List<Component> lore) {
+    @Contract(value = "_ -> this")
+    public SELF lore(@NotNull List<Component> lore) {
         this.item.editMeta(m -> m.lore(lore));
         return self();
     }
@@ -136,6 +140,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
     /**
      * @see #lore(List)
      */
+    @Contract(value = "_ -> this")
     public SELF lore(@NotNull Component... lore) {
         return this.lore(List.of(lore));
     }
@@ -147,13 +152,15 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return this builder for chaining
      * @see #lore(List)
      */
-    public SELF stringLore(List<String> lore) {
+    @Contract(value = "_ -> this")
+    public SELF stringLore(@NotNull List<String> lore) {
         return this.lore(lore.stream().map(MM::deserialize).toList());
     }
 
     /**
      * @see #stringLore(List)
      */
+    @Contract(value = "_ -> this")
     public SELF stringLore(@NotNull String... lore) {
         return this.stringLore(List.of(lore));
     }
@@ -163,6 +170,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      *
      * @return this builder for chaining
      */
+    @Contract(value = "-> this")
     public SELF hideVanillaTooltip() {
         this.item.editMeta(m -> m.addItemFlags(ItemFlag.values()));
         return self();
@@ -174,6 +182,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param hide {@code true} to hide the whole tooltip, {@code false} to show it
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     public SELF removeToolTip(boolean hide) {
         this.item.editMeta(m -> m.setHideTooltip(hide));
         return self();
@@ -185,7 +194,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param itemFlags ItemFlags
      * @return this builder for chaining
      */
-    public SELF addItemFlags(ItemFlag... itemFlags) {
+    @Contract(value = "_ -> this")
+    public SELF addItemFlags(@NotNull ItemFlag... itemFlags) {
         this.item.editMeta(m -> m.addItemFlags(itemFlags));
         return self();
     }
@@ -196,7 +206,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param itemFlags ItemFlags
      * @return this builder for chaining
      */
-    public SELF removeItemFlags(ItemFlag... itemFlags) {
+    @Contract(value = "_ -> this")
+    public SELF removeItemFlags(@NotNull ItemFlag... itemFlags) {
         this.item.removeItemFlags(itemFlags);
         return self();
     }
@@ -206,6 +217,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      *
      * @return this builder for chaining
      */
+    @Contract(value = "-> this")
     public SELF hideEnchantments() {
         item.editMeta(m -> m.addItemFlags(ItemFlag.HIDE_ENCHANTS));
         return self();
@@ -214,10 +226,11 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
     /**
      * Sets the Enchantable value of this ItemStack
      *
-     * @param value the enchantability value used when enchanting this item
+     * @param value the enchantable value, must be positive
      * @return this builder for chaining
      * @see org.bukkit.inventory.meta.ItemMeta#setEnchantable(Integer)
      */
+    @Contract(value = "_ -> this")
     public SELF setEnchantable(int value) {
         item.editMeta(m -> m.setEnchantable(value));
         return self();
@@ -229,6 +242,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return this builder for chaining
      * @see ItemMeta#setEnchantmentGlintOverride(Boolean)
      */
+    @Contract(value = "_ -> this")
     public SELF setEnchantmentGlintOverride(@Nullable Boolean override) {
         item.editMeta(m -> m.setEnchantmentGlintOverride(override));
         return self();
@@ -241,7 +255,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param level       Level
      * @return this builder for chaining
      */
-    public SELF addEnchantment(Enchantment enchantment, int level) {
+    @Contract(value = "_, _ -> this")
+    public SELF addEnchantment(@NotNull Enchantment enchantment, int level) {
         item.editMeta(m -> m.addEnchant(enchantment, level, true));
         return self();
     }
@@ -252,7 +267,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param itemModel Item Model
      * @return this builder for chaining
      */
-    public SELF setItemModel(NamespacedKey itemModel) {
+    @Contract(value = "_ -> this")
+    public SELF setItemModel(@NotNull NamespacedKey itemModel) {
         item.editMeta(m -> m.setItemModel(itemModel));
         return self();
     }
@@ -263,8 +279,9 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param data {@link CustomModelDataComponent}
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     @SuppressWarnings("UnstableApiUsage")
-    public SELF setCustomModelData(CustomModelDataComponent data) {
+    public SELF setCustomModelData(@NotNull CustomModelDataComponent data) {
         item.editMeta(m -> m.setCustomModelDataComponent(data));
         return self();
     }
@@ -275,6 +292,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param value the float value written to the custom model data component
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     @SuppressWarnings("UnstableApiUsage")
     public SELF setCustomModelData(float value) {
         item.editMeta(m -> {
@@ -291,6 +309,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param unbreakable {@code true} to make the item unbreakable, {@code false} otherwise
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     public SELF setUnbreakable(boolean unbreakable) {
         this.item.editMeta(m -> m.setUnbreakable(unbreakable));
         return self();
@@ -302,7 +321,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param rarity {@link ItemRarity}
      * @return this builder for chaining
      */
-    public SELF rarity(ItemRarity rarity) {
+    @Contract(value = "_ -> this")
+    public SELF rarity(@NotNull ItemRarity rarity) {
         this.item.editMeta(m -> m.setRarity(rarity));
         return self();
     }
@@ -314,6 +334,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param damage amount of damage
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     public SELF damage(int damage) {
         this.item.editMeta(Damageable.class, m -> m.setDamage(damage));
         return self();
@@ -326,6 +347,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param max Max Damage
      * @return this builder for chaining
      */
+    @Contract(value = "_ -> this")
     public SELF maxDamage(int max) {
         this.item.editMeta(Damageable.class, m -> m.setMaxDamage(max));
         return self();
@@ -340,7 +362,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return a read-only {@link PersistentDataContainer} snapshot
      */
     @Contract(pure = true)
-    public PersistentDataContainer getPDC() {
+    public @NotNull PersistentDataContainer getPDC() {
         return this.item.getItemMeta().getPersistentDataContainer();
     }
 
@@ -354,7 +376,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param <C>   complex Type
      * @return this builder for chaining
      */
-    public <P, C> SELF setPDC(NamespacedKey key, PersistentDataType<P, C> type, C value) {
+    @Contract(value = "_, _, _ -> this")
+    public <P, C> SELF setPDC(@NotNull NamespacedKey key, @NotNull PersistentDataType<P, C> type, C value) {
         this.item.editMeta(m -> {
             PersistentDataContainer pdc = m.getPersistentDataContainer();
             pdc.set(key, type, value);
@@ -369,7 +392,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param key the {@link NamespacedKey} to remove
      * @return this builder for chaining
      */
-    public SELF removePDC(NamespacedKey key) {
+    @Contract(value = "_ -> this")
+    public SELF removePDC(@NotNull NamespacedKey key) {
         this.item.editMeta(m -> {
             PersistentDataContainer pdc = m.getPersistentDataContainer();
             pdc.remove(key);
@@ -383,7 +407,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param base64 the Base64-encoded texture value taken from the "textures" property
      * @return this builder for chaining
      */
-    public SELF skullTexture(String base64) {
+    @Contract(value = "_ -> this")
+    public SELF skullTexture(@NotNull String base64) {
         this.item.editMeta(SkullMeta.class, m -> {
             PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), null);
             profile.setProperty(new ProfileProperty("textures", base64));
@@ -399,7 +424,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param url the URL of the skin texture
      * @return this builder for chaining
      */
-    public SELF skullURL(String url) {
+    @Contract(value = "_ -> this")
+    public SELF skullURL(@NotNull String url) {
         this.item.editMeta(SkullMeta.class, m -> {
             try {
                 PlayerProfile profile = Bukkit.createProfile(UUID.randomUUID(), null);
@@ -418,7 +444,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param player the {@link OfflinePlayer} whose skin is used
      * @return this builder for chaining
      */
-    public SELF skullOwner(OfflinePlayer player) {
+    @Contract(value = "_ -> this")
+    public SELF skullOwner(@NotNull OfflinePlayer player) {
         this.item.editMeta(SkullMeta.class, m -> m.setOwningPlayer(player));
         return self();
     }
@@ -433,6 +460,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return this builder for chaining
      * @see ItemMeta#setAttributeModifiers(Multimap)
      */
+    @Contract(value = "_ -> this")
     public SELF setAttributes(@Nullable Multimap<Attribute, AttributeModifier> attributes) {
         this.item.editMeta(m -> m.setAttributeModifiers(attributes));
         return self();
@@ -445,7 +473,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param modifiers the {@link AttributeModifier modifiers} to add
      * @return this builder for chaining
      */
-    public SELF addAttributes(Attribute attribute, AttributeModifier... modifiers) {
+    @Contract(value = "_, _ -> this")
+    public SELF addAttributes(@NotNull Attribute attribute, @NotNull AttributeModifier... modifiers) {
         for (AttributeModifier modifier : modifiers) {
             this.item.editMeta(m -> m.addAttributeModifier(attribute, modifier));
         }
@@ -459,7 +488,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param modifier  the {@link AttributeModifier} to add
      * @return this builder for chaining
      */
-    public SELF addAttribute(Attribute attribute, AttributeModifier modifier) {
+    @Contract(value = "_, _ -> this")
+    public SELF addAttribute(@NotNull Attribute attribute, @NotNull AttributeModifier modifier) {
         this.item.editMeta(m -> m.addAttributeModifier(attribute, modifier));
         return self();
     }
@@ -474,8 +504,9 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param slot the {@link EquipmentSlot} the modifier is active in
      * @return this builder for chaining
      */
+    @Contract(value = "_, _, _, _, _ -> this")
     @SuppressWarnings("UnstableApiUsage")
-    public SELF addAttribute(Attribute attribute, NamespacedKey key, double value, AttributeModifier.Operation operation, EquipmentSlot slot) {
+    public SELF addAttribute(@NotNull Attribute attribute, @NotNull NamespacedKey key, double value, @NotNull AttributeModifier.Operation operation, @NotNull EquipmentSlot slot) {
         this.item.editMeta(m -> m.addAttributeModifier(attribute, new AttributeModifier(key, value, operation, slot.getGroup())));
         return self();
     }
@@ -489,7 +520,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param operation how the value is applied ({@link AttributeModifier.Operation})
      * @return this builder for chaining
      */
-    public SELF addAttribute(Attribute attribute, NamespacedKey key, double value, AttributeModifier.Operation operation) {
+    @Contract(value = "_, _, _, _ -> this")
+    public SELF addAttribute(@NotNull Attribute attribute, @NotNull NamespacedKey key, double value, @NotNull AttributeModifier.Operation operation) {
         this.item.editMeta(m -> m.addAttributeModifier(attribute, new AttributeModifier(key, value, operation)));
         return self();
     }
@@ -501,7 +533,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param modifiers the {@link AttributeModifier modifiers} to remove
      * @return this builder for chaining
      */
-    public SELF removeAttributes(Attribute attribute, AttributeModifier... modifiers) {
+    @Contract(value = "_, _ -> this")
+    public SELF removeAttributes(@NotNull Attribute attribute, @NotNull AttributeModifier... modifiers) {
         for (AttributeModifier modifier : modifiers) {
             this.item.editMeta(m -> m.removeAttributeModifier(attribute, modifier));
         }
@@ -515,7 +548,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param modifier  the {@link AttributeModifier} to remove
      * @return this builder for chaining
      */
-    public SELF removeAttribute(Attribute attribute, AttributeModifier modifier) {
+    @Contract(value = "_, _ -> this")
+    public SELF removeAttribute(@NotNull Attribute attribute, @NotNull AttributeModifier modifier) {
         this.item.editMeta(m -> m.removeAttributeModifier(attribute, modifier));
         return self();
     }
@@ -526,7 +560,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param attribute the {@link Attribute} whose modifiers are removed
      * @return this builder for chaining
      */
-    public SELF removeAttribute(Attribute attribute) {
+    @Contract(value = "_ -> this")
+    public SELF removeAttribute(@NotNull Attribute attribute) {
         this.item.editMeta(m -> m.removeAttributeModifier(attribute));
         return self();
     }
@@ -537,7 +572,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param slot the {@link EquipmentSlot} whose modifiers are removed
      * @return this builder for chaining
      */
-    public SELF removeAttribute(EquipmentSlot slot) {
+    @Contract(value = "_ -> this")
+    public SELF removeAttribute(@NotNull EquipmentSlot slot) {
         this.item.editMeta(m -> m.removeAttributeModifier(slot));
         return self();
     }
@@ -546,6 +582,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * Hides the Attribute Tooltips of this {@link ItemStack}
      * @return this builder for chaining
      */
+    @Contract(value = "-> this")
     public SELF hideAttributes() {
         this.item.editMeta(m -> m.addItemFlags(ItemFlag.HIDE_ATTRIBUTES));
         return self();
@@ -559,7 +596,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return this builder for chaining
      * @see ItemStack#editMeta(Class, Consumer)
      */
-    public <M extends ItemMeta> SELF editMeta(Class<M> metaClass, Consumer<? super M> consumer) {
+    @Contract(value = "_, _ -> this")
+    public <M extends ItemMeta> SELF editMeta(@NotNull Class<M> metaClass, @NotNull Consumer<? super M> consumer) {
         this.item.editMeta(metaClass, consumer);
         return self();
     }
@@ -570,7 +608,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return this builder for chaining
      * @see ItemStack#editMeta(Consumer)
      */
-    public SELF editMeta(Consumer<? super ItemMeta> consumer) {
+    @Contract(value = "_ -> this")
+    public SELF editMeta(@NotNull Consumer<? super ItemMeta> consumer) {
         this.item.editMeta(consumer);
         return self();
     }
@@ -581,7 +620,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @param material The Material
      * @return this builder for chaining
      */
-    public SELF material(Material material) {
+    @Contract(value = "_ -> this")
+    public SELF material(@NotNull Material material) {
         this.item = this.item.withType(material);
         return self();
     }
@@ -591,7 +631,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      * @return a copy of the built ItemStack
      */
     @Contract(value = "-> new", pure = true)
-    public ItemStack build() {
+    public @NotNull ItemStack build() {
         return this.item.clone();
     }
 }

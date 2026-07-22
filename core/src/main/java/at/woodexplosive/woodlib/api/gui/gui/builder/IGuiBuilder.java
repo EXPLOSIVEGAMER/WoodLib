@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Fluent builder contract for {@link IGui}s: register the event callbacks and behaviour flags, then
+ * Fluent builder contract for {@link IGui}s: register the event callbacks and behavior flags, then
  * produce the GUI via {@link #build()}.
  *
  * @param <T> the concrete builder type, for fluent self-returning methods (CRTP)
@@ -76,5 +76,5 @@ public interface IGuiBuilder<T extends IGuiBuilder<T, G>, G extends IGui<G>> {
      * @return the built GUI
      */
     @Contract(value = "-> new", pure = true)
-    G build();
+    @NotNull G build();
 }

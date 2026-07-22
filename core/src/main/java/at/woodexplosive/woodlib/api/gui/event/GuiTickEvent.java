@@ -15,7 +15,7 @@ public class GuiTickEvent<T extends IGui<T>> extends GuiEvent<T> {
     /**
      * @param gui the ticking GUI
      */
-    public GuiTickEvent(T gui) {
+    public GuiTickEvent(@NotNull T gui) {
         super(gui);
     }
 

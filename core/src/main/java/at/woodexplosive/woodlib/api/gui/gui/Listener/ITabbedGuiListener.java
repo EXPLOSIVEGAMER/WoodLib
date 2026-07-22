@@ -2,6 +2,7 @@ package at.woodexplosive.woodlib.api.gui.gui.Listener;
 
 import at.woodexplosive.woodlib.api.gui.event.GuiTabChangeEvent;
 import at.woodexplosive.woodlib.api.gui.gui.ITabbedGui;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@link IGuiListener} specialization for tabbed GUIs, adding a tab-change hook.
@@ -14,6 +15,6 @@ public interface ITabbedGuiListener<T extends ITabbedGui<T>> extends IGuiListene
      * Handles the active tab changing.
      * @param event the {@link GuiTabChangeEvent}
      */
-    void onTabChange(GuiTabChangeEvent<T> event);
+    void onTabChange(@NotNull GuiTabChangeEvent<T> event);
 
 }

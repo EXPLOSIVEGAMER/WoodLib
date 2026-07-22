@@ -15,6 +15,8 @@ in your build.gradle
 	
    dependencies {
 	
-         implementation 'com.github.EXPLOSIVEGAMER:woodlib-core:1.21.11-1.0'
+         implementation 'com.github.EXPLOSIVEGAMER:woodlib-core:%version%'
 			
    }
+
+replace %version% with one of the release versions

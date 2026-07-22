@@ -21,6 +21,15 @@ tasks.named('javadoc') {
     options.addStringOption('Xdoclint:none', '-quiet')
 }
 
+// Gradle Module Metadata (.module) NICHT veröffentlichen.
+// JitPack schreibt darin die Classifier-URLs falsch (sources/javadoc zeigen aufs
+// Haupt-JAR) -> Prüfsummen-Mismatch -> Consumer-IDE bekommt keine Sources/Javadoc.
+// Ohne .module löst Gradle über die .pom + Classifier-Konvention auf und findet
+// -sources.jar / -javadoc.jar korrekt.
+tasks.withType(GenerateModuleMetadata).configureEach {
+    enabled = false
+}
+
 publishing {
     publications {
         maven(MavenPublication) {

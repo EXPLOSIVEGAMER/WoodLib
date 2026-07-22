@@ -37,7 +37,7 @@ In your build file:
 
 z.B.
 build.gradle
-```
+```groovy
 repositories {
     mavenCentral()
     maven {
@@ -48,7 +48,7 @@ repositories {
 dependencies {
      compileOnly 'com.github.EXPLOSIVEGAMER:woodlib-core:%version%'
 }
-```
+````
 - replace %version% with an compatible release version of github
 - Add WoodLib to depend or softdepend in your plugin.yml
 - place WoodLib-1.0.jar in your plugins folder
@@ -58,7 +58,7 @@ In youre build file:
 
 z.B.
 build.gradle
-```
+```groov
 plugins {
   id 'com.gradleup.shadow' version '9.0.0'
 }
@@ -78,7 +78,13 @@ dependencies {
 - replace %version% with an compatible release version of github
 
 
-- Make sure to relocate the lib jar if more than 1 plugin shades this lib!
+If you shade `woodlib` into your own plugin jar via the Shadow plugin, you should relocate the package so it doesn't collide with a different WoodLib version another plugin on the same server might bundle:
+
+```groovy
+shadowJar {
+    relocate 'at.woodexplosive.woodlib', 'org.example.artifact.shaded'
+}
 ```
 
-```
+`org.example.artifact.shaded` is a placeholder — replace it with your own package (e.g. `com.yourname.yourplugin.libs.woodlib`).
+

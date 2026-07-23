@@ -5,6 +5,7 @@ import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.common.collect.Multimap;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -148,7 +149,8 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      */
     @Contract(value = "_ -> this")
     public SELF lore(@NotNull List<Component> lore) {
-        this.item.editMeta(m -> m.lore(lore));
+        final List<Component> lores = lore.stream().map(component -> component.decoration(TextDecoration.ITALIC, false)).toList();
+        this.item.editMeta(m -> m.lore(lores));
         return self();
     }
 
@@ -169,7 +171,7 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
      */
     @Contract(value = "_ -> this")
     public SELF stringLore(@NotNull List<String> lore) {
-        return this.lore(lore.stream().map(MM::deserialize).toList());
+        return this.lore(lore.stream().map(MM::deserialize).map(component -> component.decoration(TextDecoration.ITALIC, false)).toList());
     }
 
     /**

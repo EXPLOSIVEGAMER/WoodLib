@@ -173,5 +173,5 @@ public interface ITabbedGuiBuilder<T extends ITabbedGuiBuilder<T, G>, G extends 
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    T onTabChange(@NotNull IGui.Callback<GuiTabChangeEvent> onTabChange);
+    T setOnTabChange(@NotNull IGui.Callback<GuiTabChangeEvent> onTabChange);
 }

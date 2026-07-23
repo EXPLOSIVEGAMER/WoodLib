@@ -243,7 +243,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
 
         @Override
-        public Builder onPageChange(@NotNull Callback<GuiPageChangeEvent> onPageChange) {
+        public Builder setOnPageChange(@NotNull Callback<GuiPageChangeEvent> onPageChange) {
             this.onPageChange = onPageChange;
             return this;
         }

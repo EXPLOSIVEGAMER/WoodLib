@@ -285,7 +285,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         }
 
         @Override
-        public Builder onTabChange(@NotNull Callback<GuiTabChangeEvent> onTabChange) {
+        public Builder setOnTabChange(@NotNull Callback<GuiTabChangeEvent> onTabChange) {
             this.onTabChange = onTabChange;
             return this;
         }

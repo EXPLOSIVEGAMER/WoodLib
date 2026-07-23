@@ -21,7 +21,7 @@ tasks {
 shadowJar {
     archiveBaseName.set('WoodLib')
     archiveClassifier.set('')
-    archiveVersion.set('1.0.2')
+    archiveVersion.set('1.0.3')
 }
 
 // build soll direkt die fertige Standalone-JAR erzeugen

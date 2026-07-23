@@ -85,8 +85,8 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
                           @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation) {
 
         this.inventory = type != null
-                ? Bukkit.createInventory(this, type, title)
-                : Bukkit.createInventory(this, size, title);
+                ? Bukkit.createInventory(self(), type, title)
+                : Bukkit.createInventory(self(), size, title);
 
         this.title = title;
         this.onClose = onClose;

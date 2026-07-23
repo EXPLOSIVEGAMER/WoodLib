@@ -431,13 +431,13 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public Builder onPageChange(@NotNull Callback<GuiPageChangeEvent> onPageChange) {
+        public Builder setOnPageChange(@NotNull Callback<GuiPageChangeEvent> onPageChange) {
             this.onPageChange = onPageChange;
             return this;
         }
 
         @Override
-        public Builder onTabChange(@NotNull Callback<GuiTabChangeEvent> onTabChange) {
+        public Builder setOnTabChange(@NotNull Callback<GuiTabChangeEvent> onTabChange) {
             this.onTabChange = onTabChange;
             return this;
         }

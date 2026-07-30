@@ -1,6 +1,7 @@
 package at.woodexplosive.woodlib.api.item;
 
 import at.woodexplosive.woodlib.WoodLib;
+import at.woodexplosive.woodlib.api.block.ICustomBlock;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.common.collect.Multimap;
@@ -419,6 +420,20 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
     }
 
     /**
+     * Links this ItemStack to a registered {@link ICustomBlock}: right-clicking a block while holding
+     * it places the CustomBlock, and breaking the placed structure drops a copy of this item back.
+     * <br>The item still needs to be registered as the CustomBlock's drop item via
+     * {@link at.woodexplosive.woodlib.api.block.CustomBlockRegistry#register(ICustomBlock, org.bukkit.inventory.ItemStack)}.
+     *
+     * @param block the {@link ICustomBlock} this item places
+     * @return this builder for chaining
+     */
+    @Contract(value = "_ -> this")
+    public SELF linkCustomBlock(@NotNull ICustomBlock block) {
+        return setPDC(ICustomBlock.idKey(), PersistentDataType.STRING, block.id().asString());
+    }
+
+    /**
      * Sets a custom texture on a player head using a Base64 texture value.
      * <br>Only works on {@link Material#PLAYER_HEAD}
      * @param base64 the Base64-encoded texture value taken from the "textures" property
@@ -649,10 +664,11 @@ public abstract class AbstractItemBuilder<SELF extends AbstractItemBuilder<SELF>
 
     /**
      * Builds this configured {@link ItemStack}
+     *
      * @return a copy of the built ItemStack
      */
     @Contract(value = "-> new", pure = true)
-    public @NotNull ItemStack build() {
+    public ItemStack build() {
         return this.item.clone();
     }
 }

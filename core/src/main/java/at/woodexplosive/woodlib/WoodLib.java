@@ -1,6 +1,9 @@
 package at.woodexplosive.woodlib;
 
+import at.woodexplosive.woodlib.api.block.CustomBlockRegistry;
+import at.woodexplosive.woodlib.block.CustomBlockListener;
 import at.woodexplosive.woodlib.gui.gui.AbstractGui;
+import com.jeff_media.customblockdata.CustomBlockData;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,7 +30,7 @@ public final class WoodLib {
     /** Stable library identifier, also used as the logger name prefix. */
     public static final String LIB_ID = "woodlib";
     /** Library logger, scoped to the host plugin. {@code null} until {@link #init(JavaPlugin)} ran. */
-    public static Logger logger;
+    private static Logger logger;
     private static JavaPlugin plugin;
 
     private WoodLib() {}
@@ -57,6 +60,7 @@ public final class WoodLib {
         if (plugin == null) return;
 
         Scheduler.stop();
+        CustomBlockRegistry.clear();
         plugin = null;
         logger = null;
     }
@@ -86,5 +90,13 @@ public final class WoodLib {
     private static void rListeners() {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new AbstractGui.GuiListener(), plugin());
+        pm.registerEvents(new CustomBlockListener(), plugin());
+
+        // CustomBlock parts default to Material.BARRIER, which never produces a real BlockBreakEvent in
+        // survival, so CustomBlockListener handles breaking itself and this auto-clear rarely fires for
+        // our own data. It still matters for CustomBlockPart definitions that use a normal (breakable)
+        // material: without this, a real BlockBreakEvent/explosion/piston-push could leave orphaned
+        // CustomBlockData behind. Do not remove this call.
+        CustomBlockData.registerListener(plugin());
     }
 }

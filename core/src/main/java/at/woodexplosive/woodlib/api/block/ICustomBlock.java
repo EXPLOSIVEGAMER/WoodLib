@@ -1,6 +1,10 @@
 package at.woodexplosive.woodlib.api.block;
 
 import at.woodexplosive.woodlib.WoodLib;
+import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
+import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
+import at.woodexplosive.woodlib.api.block.event.CustomBlockPlaceEvent;
+import at.woodexplosive.woodlib.block.builder.CustomBlockBuilder;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -16,7 +20,7 @@ import java.util.List;
  * {@link org.bukkit.Material#BARRIER Barrier} (or other material) for collision plus one or more
  * {@link DisplayDefinition BlockDisplays} for the visual.
  *
- * <p>Instances are built with {@link at.woodexplosive.woodlib.block.CustomBlockBuilder} and made
+ * <p>Instances are built with {@link CustomBlockBuilder} and made
  * usable by registering them, together with their placer/drop item, in
  * {@link CustomBlockRegistry#register(ICustomBlock, ItemStack)}. An item is linked to a CustomBlock
  * via {@link at.woodexplosive.woodlib.api.item.AbstractItemBuilder#linkCustomBlock(ICustomBlock)}.</p>
@@ -37,6 +41,10 @@ public interface ICustomBlock {
      */
     @Contract(pure = true)
     @NotNull List<CustomBlockPart> parts();
+
+    default void onInteract(CustomBlockInteractEvent event) {}
+    default void onBreak(CustomBlockBreakEvent event) {}
+    default void onPlace(CustomBlockPlaceEvent event) {}
 
     /**
      * Whether this CustomBlock is placed with a 4-way cardinal rotation snapped from the placing

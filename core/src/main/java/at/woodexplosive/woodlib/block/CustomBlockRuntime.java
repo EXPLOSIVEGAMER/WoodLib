@@ -11,7 +11,9 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.BlockDisplay;
+import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.ItemDisplay;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
@@ -122,7 +124,11 @@ final class CustomBlockRuntime {
      * @return {@code true} if a CustomBlock part may be placed there (air only, for v1)
      */
     static boolean isPlaceable(@NotNull Block block) {
-        return block.getType().isAir();
+        boolean placeable = block.getType().isAir();
+
+        placeable = placeable ? block.getLocation().toCenterLocation().getNearbyEntities(0.5, 0.5, 0.5).isEmpty() : placeable;
+
+        return placeable;
     }
 
     /**
@@ -188,9 +194,10 @@ final class CustomBlockRuntime {
     }
 
     /**
-     * Spawns a single {@link BlockDisplay} for {@code display} at {@code target}'s location, rotated
-     * for {@code rotationSteps}, and tags it with {@code customBlockId} and {@code origin} so
-     * {@link #removeDisplays} can find it again.
+     * Spawns the display entity for {@code display} at {@code target}'s location - a
+     * {@link BlockDisplay} for {@link DisplayDefinition.OfBlock}, an {@link ItemDisplay} for
+     * {@link DisplayDefinition.OfItem} - rotated for {@code rotationSteps}, and tags it with
+     * {@code customBlockId} and {@code origin} so {@link #removeDisplays} can find it again.
      * @param target the part block the display is spawned at
      * @param origin the structure's placement origin (stamped on the entity for later lookup)
      * @param customBlockId the owning CustomBlock's id (stamped on the entity for later lookup)
@@ -200,27 +207,49 @@ final class CustomBlockRuntime {
     private static void spawnDisplay(@NotNull Block target, @NotNull Block origin, @NotNull NamespacedKey customBlockId,
                                       @NotNull DisplayDefinition display, int rotationSteps) {
         Location location = target.getLocation();
-        target.getWorld().spawn(location, BlockDisplay.class, entity -> {
-            entity.setBlock(display.blockData());
-            entity.setTransformation(rotateTransformation(display.transformation(), rotationSteps));
-            entity.setBillboard(display.billboard());
-            if (display.brightness() != null) entity.setBrightness(display.brightness());
-            entity.setGlowing(display.glowing());
-            if (display.glowColorOverride() != null) entity.setGlowColorOverride(display.glowColorOverride());
-            entity.setGravity(false);
-            entity.setPersistent(true);
-            entity.setInvulnerable(true);
-
-            PersistentDataContainer pdc = entity.getPersistentDataContainer();
-            pdc.set(ICustomBlock.idKey(), PersistentDataType.STRING, customBlockId.asString());
-            pdc.set(CustomBlockKeys.origin(), PersistentDataType.INTEGER_ARRAY, originArray(origin));
-        });
+        switch (display) {
+            case DisplayDefinition.OfBlock ofBlock -> target.getWorld().spawn(location, BlockDisplay.class, entity -> {
+                entity.setBlock(ofBlock.blockData());
+                configureCommon(entity, display, origin, customBlockId, rotationSteps);
+            });
+            case DisplayDefinition.OfItem ofItem -> target.getWorld().spawn(location, ItemDisplay.class, entity -> {
+                entity.setItemStack(ofItem.itemStack());
+                entity.setItemDisplayTransform(ofItem.itemTransform());
+                configureCommon(entity, display, origin, customBlockId, rotationSteps);
+            });
+        }
     }
 
     /**
-     * Finds and removes every {@link BlockDisplay} tagged with {@code customBlock}'s id and
-     * {@code origin} within the structure's {@link #structureBounds(Block, ICustomBlock, int)}, rather
-     * than tracking spawned entity UUIDs - self-healing against external entity removal/desync.
+     * Applies the transform/billboard/brightness/glow/physics config shared by every display type, and
+     * stamps the PDC tags {@link #removeDisplays} looks up entities by.
+     * @param entity the spawned {@link BlockDisplay} or {@link ItemDisplay}
+     * @param display the display's visual configuration
+     * @param origin the structure's placement origin (stamped on the entity for later lookup)
+     * @param customBlockId the owning CustomBlock's id (stamped on the entity for later lookup)
+     * @param rotationSteps the rotation the structure was placed at
+     */
+    private static void configureCommon(@NotNull Display entity, @NotNull DisplayDefinition display,
+                                         @NotNull Block origin, @NotNull NamespacedKey customBlockId, int rotationSteps) {
+        entity.setTransformation(rotateTransformation(display.transformation(), rotationSteps));
+        entity.setBillboard(display.billboard());
+        if (display.brightness() != null) entity.setBrightness(display.brightness());
+        entity.setGlowing(display.glowing());
+        if (display.glowColorOverride() != null) entity.setGlowColorOverride(display.glowColorOverride());
+        entity.setGravity(false);
+        entity.setPersistent(true);
+        entity.setInvulnerable(true);
+
+        PersistentDataContainer pdc = entity.getPersistentDataContainer();
+        pdc.set(ICustomBlock.idKey(), PersistentDataType.STRING, customBlockId.asString());
+        pdc.set(CustomBlockKeys.origin(), PersistentDataType.INTEGER_ARRAY, originArray(origin));
+    }
+
+    /**
+     * Finds and removes every display entity ({@link BlockDisplay} or {@link ItemDisplay}) tagged with
+     * {@code customBlock}'s id and {@code origin} within the structure's
+     * {@link #structureBounds(Block, ICustomBlock, int)}, rather than tracking spawned entity UUIDs -
+     * self-healing against external entity removal/desync.
      * @param customBlock the CustomBlock structure being removed
      * @param origin the structure's placement origin
      * @param rotationSteps the rotation it was placed at
@@ -230,7 +259,7 @@ final class CustomBlockRuntime {
         int[] originArray = originArray(origin);
 
         for (Entity entity : origin.getWorld().getNearbyEntities(bounds)) {
-            if (!(entity instanceof BlockDisplay)) continue;
+            if (!(entity instanceof Display)) continue;
 
             PersistentDataContainer pdc = entity.getPersistentDataContainer();
             String taggedId = pdc.get(ICustomBlock.idKey(), PersistentDataType.STRING);

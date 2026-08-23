@@ -2,25 +2,42 @@ package at.woodexplosive.woodlib.block;
 
 import at.woodexplosive.woodlib.api.block.CustomBlockPart;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
+import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
+import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
+import at.woodexplosive.woodlib.api.block.event.CustomBlockPlaceEvent;
+import at.woodexplosive.woodlib.block.builder.CustomBlockBuilder;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Default {@link ICustomBlock} implementation. Built via {@link CustomBlockBuilder}.
  */
-public final class CustomBlock implements ICustomBlock {
+public class CustomBlock implements ICustomBlock {
 
-    private final NamespacedKey id;
-    private final List<CustomBlockPart> parts;
-    private final boolean rotatable;
+    protected NamespacedKey id;
+    protected List<CustomBlockPart> parts;
+    protected boolean rotatable;
 
-    CustomBlock(@NotNull NamespacedKey id, @NotNull List<CustomBlockPart> parts, boolean rotatable) {
+    protected @NotNull Consumer<CustomBlockInteractEvent> onInteract = event -> {};
+    protected @NotNull Consumer<CustomBlockPlaceEvent> onPlace = event -> {};
+    protected @NotNull Consumer<CustomBlockBreakEvent> onBreak = event -> {};
+
+    public CustomBlock(@NotNull NamespacedKey id, @NotNull List<CustomBlockPart> parts, boolean rotatable,
+                       @NotNull Consumer<CustomBlockInteractEvent> onInteract,
+                       @NotNull Consumer<CustomBlockPlaceEvent> onPlace,
+                       @NotNull Consumer<CustomBlockBreakEvent> onBreak) {
         this.id = id;
         this.parts = List.copyOf(parts);
         this.rotatable = rotatable;
+        this.onInteract = onInteract;
+        this.onPlace = onPlace;
+        this.onBreak = onBreak;
     }
+
+    protected CustomBlock() {}
 
     @Override
     public @NotNull NamespacedKey id() {
@@ -33,7 +50,17 @@ public final class CustomBlock implements ICustomBlock {
     }
 
     @Override
-    public boolean rotatable() {
-        return rotatable;
+    public void onInteract(@NotNull CustomBlockInteractEvent event) {
+        onInteract.accept(event);
+    }
+
+    @Override
+    public void onBreak(@NotNull CustomBlockBreakEvent event) {
+        onBreak.accept(event);
+    }
+
+    @Override
+    public void onPlace(@NotNull CustomBlockPlaceEvent event) {
+        onPlace.accept(event);
     }
 }

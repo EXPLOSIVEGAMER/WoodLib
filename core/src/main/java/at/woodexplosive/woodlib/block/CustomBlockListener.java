@@ -110,6 +110,7 @@ public final class CustomBlockListener implements Listener {
         if (!CustomBlockRuntime.allTargetsPlaceable(customBlock, origin, rotationSteps)) return;
 
         CustomBlockPlaceEvent placeEvent = new CustomBlockPlaceEvent(player, customBlock, origin, clickedBlock, face, rotationSteps, itemInHand);
+        customBlock.onPlace(placeEvent);
         if (!placeEvent.callEvent()) return;
 
         CustomBlockRuntime.placeParts(customBlock, origin, rotationSteps);
@@ -146,6 +147,8 @@ public final class CustomBlockListener implements Listener {
 
         CustomBlockBreakEvent breakEvent = new CustomBlockBreakEvent(player, resolved.customBlock(), resolved.originBlock(),
                 clickedBlock, resolved.partIndex(), resolved.rotationSteps());
+
+        resolved.customBlock().onBreak(breakEvent);
         if (!breakEvent.callEvent()) return;
 
         CustomBlockRuntime.removeParts(resolved.customBlock(), resolved.originBlock(), resolved.rotationSteps());
@@ -202,6 +205,7 @@ public final class CustomBlockListener implements Listener {
 
         CustomBlockInteractEvent interactEvent = new CustomBlockInteractEvent(player, resolved.customBlock(), resolved.originBlock(),
                 clickedBlock, resolved.partIndex(), resolved.rotationSteps(), EquipmentSlot.HAND, itemInHand);
+        resolved.customBlock().onInteract(interactEvent);
         interactEvent.callEvent();
     }
 }

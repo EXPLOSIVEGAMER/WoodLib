@@ -41,73 +41,120 @@ import java.util.List;
 public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         implements ITabbedGui<SimpleTabbedPagedGui>, IPagedGui<SimpleTabbedPagedGui> {
 
-    /** The tabs of this GUI, in order. */
+    /**
+     * The tabs of this GUI, in order.
+     */
     private final List<ITab> tabs = new ArrayList<>();
-    /** The slot indices the tab buttons are rendered into. */
+    /**
+     * The slot indices the tab buttons are rendered into.
+     */
     private final List<Integer> tabSlots;
-    /** The slot indices the active tab's page content is rendered into. */
+    /**
+     * The slot indices the active tab's page content is rendered into.
+     */
     private final List<Integer> pageSlots;
 
-    /** Callback run when the page changes; returning {@code true} cancels the change. */
+    /**
+     * Callback run when the page changes; returning {@code true} cancels the change.
+     */
     protected final Callback<GuiPageChangeEvent> onPageChange;
-    /** Callback run when the active tab changes; returning {@code true} cancels the change. */
+    /**
+     * Callback run when the active tab changes; returning {@code true} cancels the change.
+     */
     protected final Callback<GuiTabChangeEvent> onTabChange;
 
-    /** The currently active tab, or {@code null} if no tab has been added yet. */
+    /**
+     * The currently active tab, or {@code null} if no tab has been added yet.
+     */
     private ITab activeTab;
-    /** The current (0-based) page index within the active tab. */
+    /**
+     * The current (0-based) page index within the active tab.
+     */
     private int page;
 
     /**
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
-     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
-     * @param onClose the close callback
-     * @param onOpen the open callback
-     * @param onDrag the drag callback
-     * @param onTick the per-tick callback
-     * @param onClickGlobal the global click callback
-     * @param onPageChange the page-change callback
-     * @param onTabChange the tab-change callback
+     * @param title              the inventory title
+     * @param size               the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type               the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose            the close callback
+     * @param onOpen             the open callback
+     * @param onDrag             the drag callback
+     * @param onTick             the per-tick callback
+     * @param onClickGlobal      the global click callback
+     * @param onPageChange       the page-change callback
+     * @param onTabChange        the tab-change callback
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
-     * @param tabSlots the slot indices the tab buttons are rendered into
-     * @param pageSlots the slot indices the active tab's page content is rendered into
+     * @param tabSlots           the slot indices the tab buttons are rendered into
+     * @param pageSlots          the slot indices the active tab's page content is rendered into
+     * @param parent             the parent Gui can be null if there's none
      */
-    protected SimpleTabbedPagedGui(@NotNull Component title, int size, @Nullable InventoryType type,
-                                   @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
-                                   @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
-                                   IGuiElement.@NotNull ClickCallback onClickGlobal,
-                                   @NotNull Callback<GuiPageChangeEvent> onPageChange,
-                                   @NotNull Callback<GuiTabChangeEvent> onTabChange,
-                                   boolean playerManipulation, @NotNull List<Integer> tabSlots, @NotNull List<Integer> pageSlots) {
+    private SimpleTabbedPagedGui(@NotNull Component title, int size, @Nullable InventoryType type,
+                                 @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
+                                 @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
+                                 IGuiElement.@NotNull ClickCallback onClickGlobal,
+                                 @NotNull Callback<GuiPageChangeEvent> onPageChange,
+                                 @NotNull Callback<GuiTabChangeEvent> onTabChange,
+                                 boolean playerManipulation, @NotNull List<Integer> tabSlots, @NotNull List<Integer> pageSlots,
+                                 @Nullable IGui<?> parent
+    ) {
 
-        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
+        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation, parent);
         this.onPageChange = onPageChange;
         this.onTabChange = onTabChange;
         this.tabSlots = tabSlots;
         this.pageSlots = pageSlots;
     }
 
-    /**
-     * Starts a builder for a tabbed, paged GUI of the given title and size.
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9)
-     * @return a new {@link Builder}
-     */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, int size) {
-        return new Builder(title, size);
+    protected SimpleTabbedPagedGui() {
+        super();
+        this.tabSlots = tabSlots();
+        this.pageSlots = pageSlots();
+        this.onPageChange = onPageChange();
+        this.onTabChange = onTabChange();
+
+        this.init();
+    }
+
+    protected @NotNull List<Integer> tabSlots() {
+        return List.of();
+    }
+
+    protected @NotNull List<Integer> pageSlots() {
+        return List.of();
+    }
+
+    protected @NotNull Callback<GuiPageChangeEvent> onPageChange() {
+        return IGui.emptyCallback();
+    }
+
+    protected @NotNull Callback<GuiTabChangeEvent> onTabChange() {
+        return IGui.emptyCallback();
     }
 
     /**
-     * Starts a builder for a tabbed, paged GUI of the given title and {@link InventoryType}.
-     * @param title the inventory title
-     * @param type the inventory type (its default size is used)
-     * @return a new {@link Builder}
+     * Starts a builder for a tabbed and paged GUI of the given title and size.
+     *
+     * @param title  the inventory title
+     * @param size   the inventory size (multiple of 9)
+     * @param parent the parent Gui can be null if there's none
+     * @return a new {@link SimpleTabbedGui.Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, @NotNull InventoryType type) {
-        return new Builder(title, type);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, int size, @Nullable IGui<?> parent) {
+        return new Builder(title, size, parent);
+    }
+
+    /**
+     * Starts a builder for a tabbed and paged GUI of the given title and {@link InventoryType}.
+     *
+     * @param title  the inventory title
+     * @param type   the inventory type (its default size is used)
+     * @param parent the parent Gui can be null if there's none
+     * @return a new {@link SimpleTabbedGui.Builder}
+     */
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, @NotNull InventoryType type, @Nullable IGui<?> parent) {
+        return new Builder(title, type, parent);
     }
 
     // ---- Tabbed ----
@@ -248,10 +295,13 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     // ---- Builder ----
 
-    /** Fluent builder for {@link SimpleTabbedPagedGui}. */
+    /**
+     * Fluent builder for {@link SimpleTabbedPagedGui}.
+     */
     public static class Builder implements IPagedGuiBuilder<Builder, SimpleTabbedPagedGui>, ITabbedGuiBuilder<Builder, SimpleTabbedPagedGui> {
         private final int size;
         private final Component title;
+        private final @Nullable IGui<?> parent;
         private final InventoryType type;
 
         private List<Integer> tabSlots = new ArrayList<>();
@@ -267,23 +317,27 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
         /**
-         * @param title the inventory title
-         * @param size the inventory size (multiple of 9)
+         * @param title  the inventory title
+         * @param size   the inventory size (multiple of 9)
+         * @param parent the parent GUI set to null if there's none
          */
-        public Builder(Component title, int size) {
+        public Builder(Component title, int size, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = size;
             this.type = null;
+            this.parent = parent;
         }
 
         /**
-         * @param title the inventory title
-         * @param type the inventory type (its default size is used)
+         * @param title  the inventory title
+         * @param type   the inventory type (its default size is used)
+         * @param parent the parent GUI set to null if there's none
          */
-        public Builder(Component title, InventoryType type) {
+        public Builder(Component title, InventoryType type, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = type.getDefaultSize();
             this.type = type;
+            this.parent = parent;
         }
 
         @Override
@@ -420,7 +474,8 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
         /**
          * Adds a paged tab together with its page elements.
-         * @param tab the tab to add
+         *
+         * @param tab          the tab to add
          * @param pageElements the tab's page elements
          * @return this builder for chaining
          */
@@ -445,7 +500,8 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         @Override
         public @NonNull SimpleTabbedPagedGui build() {
             SimpleTabbedPagedGui gui = new SimpleTabbedPagedGui(title, size, type, onClose, onOpen, onDrag, onTick,
-                    onClickGlobal, onPageChange, onTabChange, playerManipulation, tabSlots, pageSlots);
+                    onClickGlobal, onPageChange, onTabChange, playerManipulation, tabSlots, pageSlots,
+                    parent);
             for (ITab tab : this.tabs) gui.addTab(tab);
             return gui;
         }

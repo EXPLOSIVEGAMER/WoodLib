@@ -23,68 +23,97 @@ import java.util.*;
 
 /**
  * A multipage {@link IPagedGui}: page elements are spread across the configured page slots and
- * navigated with page controls. Create one through {@link #builder(Component, int)}, add elements via
+ * navigated with page controls. Create one through {@link #builder(Component, int, IGui)} or extending a class, add elements via
  * {@link #addPageElement(at.woodexplosive.woodlib.api.gui.element.IGuiElement)}, optionally place
  * next/previous controls, then open it. Opening (re)populates the current page automatically.
  */
 public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPagedGui<SimplePagedGui> {
-    /** The slot indices that page elements are laid out into. */
+    /**
+     * The slot indices that page elements are laid out into.
+     */
     private final List<Integer> pageSlots;
 
-    /** Callback run when the page changes; returning {@code true} cancels the change. */
+    /**
+     * Callback run when the page changes; returning {@code true} cancels the change.
+     */
     protected final Callback<GuiPageChangeEvent> onPageChange;
 
-    /** Backing list of all page elements (across every page). */
+    /**
+     * Backing list of all page elements (across every page).
+     */
     private LinkedList<IGuiElement> pageElements = new LinkedList<>();
 
-    /** The current (0-based) page index. */
+    /**
+     * The current (0-based) page index.
+     */
     private int page;
 
     /**
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
-     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
-     * @param onClose the close callback
-     * @param onOpen the open callback
-     * @param onDrag the drag callback
-     * @param onTick the per-tick callback
-     * @param onClickGlobal the global click callback
-     * @param onPageChange the page-change callback
+     * @param title              the inventory title
+     * @param size               the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type               the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose            the close callback
+     * @param onOpen             the open callback
+     * @param onDrag             the drag callback
+     * @param onTick             the per-tick callback
+     * @param onClickGlobal      the global click callback
+     * @param onPageChange       the page-change callback
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
-     * @param pageSlots the slot indices that page elements are laid out into
+     * @param pageSlots          the slot indices that page elements are laid out into
+     * @param parent             the parent Gui can be null if there's none
      */
-    protected SimplePagedGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose,
-                             @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
-                             @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal,
-                             @NotNull Callback<GuiPageChangeEvent> onPageChange,
-                             boolean playerManipulation, @NotNull List<Integer> pageSlots) {
+    private SimplePagedGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose,
+                           @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
+                           @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal,
+                           @NotNull Callback<GuiPageChangeEvent> onPageChange,
+                           boolean playerManipulation, @NotNull List<Integer> pageSlots, @Nullable IGui<?> parent
+    ) {
 
-        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
+        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation, parent);
         this.onPageChange = onPageChange;
         this.pageSlots = pageSlots;
     }
 
+    protected SimplePagedGui() {
+        super();
+        this.pageSlots = pageSlots();
+        this.onPageChange = onPageChange();
+
+        this.init();
+    }
+
+    protected @NotNull List<Integer> pageSlots() {
+        return List.of();
+    }
+
+    protected @NotNull Callback<GuiPageChangeEvent> onPageChange() {
+        return IGui.emptyCallback();
+    }
+
     /**
-     * Starts a builder for a paged GUI of the given title and size. Every slot is a page slot by
-     * default; narrow this with {@link Builder#setPageSlots(List)}.
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9)
-     * @return a new {@link Builder}
+     * Starts a builder for a paged GUI of the given title and size.
+     *
+     * @param title  the inventory title
+     * @param size   the inventory size (multiple of 9)
+     * @param parent the parent Gui can be null if there's none
+     * @return a new {@link SimpleTabbedGui.Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, int size) {
-        return new Builder(title, size);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, int size, @Nullable IGui<?> parent) {
+        return new Builder(title, size, parent);
     }
 
     /**
      * Starts a builder for a paged GUI of the given title and {@link InventoryType}.
-     * @param title the inventory title
-     * @param type the inventory type (its default size is used)
-     * @return a new {@link Builder}
+     *
+     * @param title  the inventory title
+     * @param type   the inventory type (its default size is used)
+     * @param parent the parent Gui can be null if there's none
+     * @return a new {@link SimpleTabbedGui.Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, @NotNull InventoryType type) {
-        return new Builder(title, type);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, @NotNull InventoryType type, @Nullable IGui<?> parent) {
+        return new Builder(title, type, parent);
     }
 
     @Override
@@ -172,11 +201,14 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
     // Builder
 
-    /** Fluent builder for {@link SimplePagedGui}. */
+    /**
+     * Fluent builder for {@link SimplePagedGui}.
+     */
     public static class Builder implements IPagedGuiBuilder<Builder, SimplePagedGui> {
         private final int size;
         private final Component title;
         private final InventoryType type;
+        private final @Nullable IGui<?> parent;
 
         private List<Integer> pageSlots = new ArrayList<>();
         private boolean playerManipulation;
@@ -188,27 +220,27 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
         /**
-         * @param title the inventory title
-         * @param size the inventory size (multiple of 9); every slot defaults to a page slot
+         * @param title  the inventory title
+         * @param size   the inventory size (multiple of 9)
+         * @param parent the parent GUI set to null if there's none
          */
-        public Builder(Component title, int size) {
+        public Builder(Component title, int size, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = size;
             this.type = null;
-
-            for (int i = 0; i < size; i++) pageSlots.add(i);
+            this.parent = parent;
         }
 
         /**
-         * @param title the inventory title
-         * @param type the inventory type (its default size is used); every slot defaults to a page slot
+         * @param title  the inventory title
+         * @param type   the inventory type (its default size is used)
+         * @param parent the parent GUI set to null if there's none
          */
-        public Builder(Component title, InventoryType type) {
+        public Builder(Component title, InventoryType type, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = type.getDefaultSize();
             this.type = type;
-
-            for (int i = 0; i < this.size; i++) pageSlots.add(i);
+            this.parent = parent;
         }
 
         @Override
@@ -286,7 +318,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
 
         @Override
         public @NonNull SimplePagedGui build() {
-            return new SimplePagedGui(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, onPageChange, playerManipulation, pageSlots);
+            return new SimplePagedGui(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, onPageChange, playerManipulation, pageSlots, parent);
         }
     }
 }

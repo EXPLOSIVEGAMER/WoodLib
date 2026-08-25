@@ -25,71 +25,109 @@ import java.util.List;
 
 /**
  * A tabbed {@link ITabbedGui}: tab buttons in the tab slots switch which {@link ITab}'s content is
- * shown in the content slots. Create one through {@link #builder(Component, int)}, add tabs, then
+ * shown in the content slots. Create one through {@link #builder(Component, int, IGui)} or extending a class, add tabs, then
  * open it. Opening (re)renders the tab buttons and the active tab's content.
  */
 public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITabbedGui<SimpleTabbedGui> {
 
-    /** The tabs of this GUI, in order. */
+    /**
+     * The tabs of this GUI, in order.
+     */
     private final List<ITab> tabs = new ArrayList<>();
-    /** The slot indices the tab buttons are rendered into. */
+    /**
+     * The slot indices the tab buttons are rendered into.
+     */
     private final List<Integer> tabSlots;
-    /** The slot indices the active tab's content is rendered into. */
+    /**
+     * The slot indices the active tab's content is rendered into.
+     */
     private final List<Integer> contentSlots;
 
-    /** Callback run when the active tab changes; returning {@code true} cancels the change. */
+    /**
+     * Callback run when the active tab changes; returning {@code true} cancels the change.
+     */
     protected final Callback<GuiTabChangeEvent> onTabChange;
 
-    /** The currently active tab, or {@code null} if no tab has been added yet. */
+    /**
+     * The currently active tab, or {@code null} if no tab has been added yet.
+     */
     private ITab activeTab;
 
     /**
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
-     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
-     * @param onClose the close callback
-     * @param onOpen the open callback
-     * @param onDrag the drag callback
-     * @param onTick the per-tick callback
-     * @param onClickGlobal the global click callback
-     * @param onTabChange the tab-change callback
+     * @param title              the inventory title
+     * @param size               the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type               the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose            the close callback
+     * @param onOpen             the open callback
+     * @param onDrag             the drag callback
+     * @param onTick             the per-tick callback
+     * @param onClickGlobal      the global click callback
+     * @param onTabChange        the tab-change callback
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
-     * @param tabSlots the slot indices the tab buttons are rendered into
-     * @param contentSlots the slot indices the active tab's content is rendered into
+     * @param tabSlots           the slot indices the tab buttons are rendered into
+     * @param contentSlots       the slot indices the active tab's content is rendered into
+     * @param parent             the parent Gui can be null if there's none
      */
-    protected SimpleTabbedGui(@NotNull Component title, int size, @Nullable InventoryType type,
-                             @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
-                             @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
-                             IGuiElement.@NotNull ClickCallback onClickGlobal,
-                             @NotNull Callback<GuiTabChangeEvent> onTabChange,
-                             boolean playerManipulation, @NotNull List<Integer> tabSlots, @NotNull List<Integer> contentSlots) {
+    private SimpleTabbedGui(@NotNull Component title, int size, @Nullable InventoryType type,
+                            @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
+                            @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
+                            IGuiElement.@NotNull ClickCallback onClickGlobal,
+                            @NotNull Callback<GuiTabChangeEvent> onTabChange,
+                            boolean playerManipulation, @NotNull List<Integer> tabSlots, @NotNull List<Integer> contentSlots,
+                            @Nullable IGui<?> parent
+    ) {
 
-        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
+        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation, parent);
         this.onTabChange = onTabChange;
         this.tabSlots = tabSlots;
         this.contentSlots = contentSlots;
     }
 
+    protected SimpleTabbedGui() {
+        super();
+        this.contentSlots = contentSlots();
+        this.tabSlots = tabSlots();
+        this.onTabChange = onTabChange();
+
+        this.init();
+    }
+
+    protected @NotNull List<Integer> contentSlots() {
+        return List.of();
+    }
+
+    protected @NotNull List<Integer> tabSlots() {
+        return List.of();
+    }
+
+    protected @NotNull Callback<GuiTabChangeEvent> onTabChange() {
+        return IGui.emptyCallback();
+    }
+
     /**
      * Starts a builder for a tabbed GUI of the given title and size.
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9)
+     *
+     * @param title  the inventory title
+     * @param size   the inventory size (multiple of 9)
+     * @param parent the parent Gui can be null if there's none
      * @return a new {@link Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, int size) {
-        return new Builder(title, size);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, int size, @Nullable IGui<?> parent) {
+        return new Builder(title, size, parent);
     }
 
     /**
      * Starts a builder for a tabbed GUI of the given title and {@link InventoryType}.
-     * @param title the inventory title
-     * @param type the inventory type (its default size is used)
+     *
+     * @param title  the inventory title
+     * @param type   the inventory type (its default size is used)
+     * @param parent the parent Gui can be null if there's none
      * @return a new {@link Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, @NotNull InventoryType type) {
-        return new Builder(title, type);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, @NotNull InventoryType type, @Nullable IGui<?> parent) {
+        return new Builder(title, type, parent);
     }
 
     @Override
@@ -145,11 +183,14 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
 
     // Builder
 
-    /** Fluent builder for {@link SimpleTabbedGui}. */
+    /**
+     * Fluent builder for {@link SimpleTabbedGui}.
+     */
     public static class Builder implements ITabbedGuiBuilder<Builder, SimpleTabbedGui> {
         private final int size;
         private final Component title;
         private final InventoryType type;
+        private final @Nullable IGui<?> parent;
 
         private List<Integer> tabSlots = new ArrayList<>();
         private List<Integer> contentSlots = new ArrayList<>();
@@ -163,23 +204,27 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
         /**
-         * @param title the inventory title
-         * @param size the inventory size (multiple of 9)
+         * @param title  the inventory title
+         * @param size   the inventory size (multiple of 9)
+         * @param parent the parent GUI set to null if there's none
          */
-        public Builder(Component title, int size) {
+        public Builder(Component title, int size, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = size;
             this.type = null;
+            this.parent = parent;
         }
 
         /**
-         * @param title the inventory title
-         * @param type the inventory type (its default size is used)
+         * @param title  the inventory title
+         * @param type   the inventory type (its default size is used)
+         * @param parent the parent GUI set to null if there's none
          */
-        public Builder(Component title, InventoryType type) {
+        public Builder(Component title, InventoryType type, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = type.getDefaultSize();
             this.type = type;
+            this.parent = parent;
         }
 
         @Override
@@ -293,7 +338,7 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         @Override
         public @NonNull SimpleTabbedGui build() {
             SimpleTabbedGui gui = new SimpleTabbedGui(title, size, type, onClose, onOpen, onDrag, onTick,
-                    onClickGlobal, onTabChange, playerManipulation, tabSlots, contentSlots);
+                    onClickGlobal, onTabChange, playerManipulation, tabSlots, contentSlots, parent);
             for (ITab tab : this.tabs) gui.addTab(tab);
             return gui;
         }

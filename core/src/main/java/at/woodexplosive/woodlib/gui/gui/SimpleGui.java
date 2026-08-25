@@ -12,8 +12,8 @@ import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 
 /**
- * A basic single-page {@link IGui}. Create one through {@link #builder(Component, int)} (or the
- * {@link InventoryType} variant), configure its callbacks, {@link Builder#build() build} it, then
+ * A basic single-page {@link IGui}. Create one through {@link #builder(Component, int, IGui)} (or the
+ * {@link InventoryType} variant) or extending a class, configure its callbacks, {@link Builder#build() build} it, then
  * {@link #open(org.bukkit.entity.Player) open} it for a player.
  *
  * <pre>{@code
@@ -27,48 +27,60 @@ import org.jspecify.annotations.NonNull;
 public class SimpleGui extends AbstractGui<SimpleGui> {
 
     /**
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
-     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
-     * @param onClose the close callback
-     * @param onOpen the open callback
-     * @param onDrag the drag callback
-     * @param onTick the per-tick callback
-     * @param onClickGlobal the global click callback
+     * @param title              the inventory title
+     * @param size               the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type               the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose            the close callback
+     * @param onOpen             the open callback
+     * @param onDrag             the drag callback
+     * @param onTick             the per-tick callback
+     * @param onClickGlobal      the global click callback
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
+     * @param parent             the parent Gui can be null if there's none
      */
-    protected SimpleGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
-                        @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation) {
-        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation);
+    private SimpleGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
+                      @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation, IGui<?> parent) {
+        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation, parent);
+    }
+
+    protected SimpleGui() {
+        super();
+
+        this.init();
     }
 
     /**
-     * Starts a builder for a chest-like GUI of the given title and size.
+     * Starts a builder for a Simple GUI of the given title and size.
      * @param title the inventory title
      * @param size the inventory size (multiple of 9)
+     * @param parent the parent Gui can be null if there's none
      * @return a new {@link Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, int size) {
-        return new Builder(title, size);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, int size, @Nullable IGui<?> parent) {
+        return new Builder(title, size, parent);
     }
 
     /**
-     * Starts a builder for a GUI of the given title and {@link InventoryType}.
+     * Starts a builder for a Simple GUI of the given title and {@link InventoryType}.
      * @param title the inventory title
      * @param type the inventory type (its default size is used)
+     * @param parent the parent Gui can be null if there's none
      * @return a new {@link Builder}
      */
-    @Contract(value = "_, _ -> new", pure = true)
-    public static Builder builder(Component title, @NotNull InventoryType type) {
-        return new Builder(title, type);
+    @Contract(value = "_, _, _ -> new", pure = true)
+    public static Builder builder(Component title, @NotNull InventoryType type, @Nullable IGui<?> parent) {
+        return new Builder(title, type, parent);
     }
 
-    /** Fluent builder for {@link SimpleGui}. */
+    /**
+     * Fluent builder for {@link SimpleGui}.
+     */
     public static class Builder implements IGuiBuilder<Builder, SimpleGui> {
         private final int size;
         private final Component title;
         private final InventoryType type;
+        private final @Nullable IGui<?> parent;
 
         private boolean playerManipulation = false;
         private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
@@ -80,23 +92,26 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
         /**
          * @param title the inventory title
          * @param size the inventory size (multiple of 9)
+         * @param parent the parent GUI set to null if there's none
          */
-        protected Builder(Component title, int size) {
+        public Builder(Component title, int size, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = size;
             this.type = null;
+            this.parent = parent;
         }
 
         /**
-         * @param title the inventory title
-         * @param type the inventory type (its default size is used)
+         * @param title  the inventory title
+         * @param type   the inventory type (its default size is used)
+         * @param parent the parent GUI set to null if there's none
          */
-        protected Builder(Component title, InventoryType type) {
+        public Builder(Component title, InventoryType type, @Nullable IGui<?> parent) {
             this.title = title;
             this.size = type.getDefaultSize();
             this.type = type;
+            this.parent = parent;
         }
-
         @Override
         public Builder setOnClose(@NotNull Callback<InventoryCloseEvent> onClose) {
             this.onClose = onClose;
@@ -135,7 +150,7 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
 
         @Override
         public @NonNull SimpleGui build() {
-            return new SimpleGui(this.title, this.size, this.type, this.onClose, this.onOpen, this.onDrag, this.onTick, this.onClickGlobal, this.playerManipulation);
+            return new SimpleGui(this.title, this.size, this.type, this.onClose, this.onOpen, this.onDrag, this.onTick, this.onClickGlobal, this.playerManipulation, parent);
         }
     }
 }

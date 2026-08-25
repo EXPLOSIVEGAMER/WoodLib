@@ -65,6 +65,8 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     /** Whether the player may freely move items in the inventory. */
     protected final boolean playerManipulation;
 
+    protected final @Nullable IGui<?> parent;
+
     /** The player this GUI was last opened for. */
     private Player player;
     /** The currently scheduled per-tick update task, or {@code null} while not ticking. */
@@ -82,7 +84,8 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
      */
     protected AbstractGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
-                          @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation) {
+                          @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation, @Nullable IGui<?> parent) {
+        this.parent = parent;
 
         this.inventory = type != null
                 ? Bukkit.createInventory(self(), type, title)
@@ -95,6 +98,64 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         this.onTick = onTick;
         this.onClickGlobal = onClickGlobal;
         this.playerManipulation = playerManipulation;
+    }
+
+    protected AbstractGui() {
+        this.parent = parent();
+        InventoryType type = type();
+        this.inventory = type != null
+                ? Bukkit.createInventory(self(), type, title())
+                : Bukkit.createInventory(self(), size(), title());
+
+        this.title = title();
+        this.onClose = onClose();
+        this.onOpen = onOpen();
+        this.onDrag = onDrag();
+        this.onTick = onTick();
+        this.onClickGlobal = onClickGlobal();
+        this.playerManipulation = playerManipulation();
+    }
+
+    protected void init() {}
+
+    protected @NotNull Component title() {
+        return Component.empty();
+    }
+
+    protected @Nullable IGui<?> parent() {
+        return null;
+    }
+
+    protected @Nullable InventoryType type() {
+        return null;
+    }
+
+    protected int size() {
+        return 0;
+    }
+
+    protected @NotNull Callback<InventoryCloseEvent> onClose() {
+        return IGui.emptyCallback();
+    }
+
+    protected @NotNull Callback<InventoryOpenEvent> onOpen() {
+        return IGui.emptyCallback();
+    }
+
+    protected @NotNull Callback<InventoryDragEvent> onDrag() {
+        return IGui.emptyCallback();
+    }
+
+    protected @NotNull Callback<GuiTickEvent> onTick() {
+        return IGui.emptyCallback();
+    }
+
+    protected @NotNull IGuiElement.ClickCallback onClickGlobal() {
+        return IGuiElement.EMPTY_CALLBACK;
+    }
+
+    protected boolean playerManipulation() {
+        return false;
     }
 
     /**
@@ -193,6 +254,12 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
     @Override
     public int close() {
+        if (this.parent ==  null) return this.inventory.close();
+        this.parent.open(this.player);
+        return -1;
+    }
+
+    public int closeAll() {
         return this.inventory.close();
     }
 

@@ -1,10 +1,15 @@
 package at.woodexplosive.woodlib.api.gui.gui;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
+import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
@@ -35,16 +40,6 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      */
     static <E extends Event> IGui.Callback<E> emptyCallback() {
         return event -> false;
-    }
-
-    /**
-     * A no-op {@link TickCallback} that does nothing.
-     *
-     * @param <T> the concrete GUI type
-     * @return a callback that does nothing
-     */
-    static <T extends IGui<T>> TickCallback<T> emptyTickCallback() {
-        return gui -> {};
     }
 
     /** Shared {@link MiniMessage} instance for deserializing user-facing strings. */
@@ -117,6 +112,12 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
     int close();
 
     /**
+     * Closes all inventories for all viewers.
+     * @return the number of viewers the inventory was closed for
+     */
+    int closeAll();
+
+    /**
      * Opens an inventory window with the specified inventory on the top and the player's inventory on the bottom.
      * @param player The player
      * @return The newly opened {@link InventoryView}
@@ -154,18 +155,5 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
          * @return if the event should be canceled
          */
         boolean run(@NotNull T event);
-    }
-
-    /**
-     * A callback invoked once per server tick while the GUI is open.
-     * @param <T> the concrete GUI type
-     */
-    @FunctionalInterface
-    interface TickCallback<T extends IGui<T>> {
-        /**
-         * Runs the tick logic.
-         * @param gui the ticking GUI
-         */
-        void run(@NotNull T gui);
     }
 }

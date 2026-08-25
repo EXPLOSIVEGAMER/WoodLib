@@ -9,7 +9,6 @@ subprojects {
     apply plugin: 'java'
 
     group = 'at.woodexplosive'
-    version = '1.0.3'
 
     repositories {
         mavenCentral()

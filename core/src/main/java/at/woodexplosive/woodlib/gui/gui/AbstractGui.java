@@ -67,6 +67,9 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
     protected final @Nullable IGui<?> parent;
 
+    /** Exit Flag to determine exit function */
+    protected byte exitFlag = 0;
+
     /** The player this GUI was last opened for. */
     private Player player;
     /** The currently scheduled per-tick update task, or {@code null} while not ticking. */
@@ -254,12 +257,17 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
 
     @Override
     public int close() {
-        if (this.parent ==  null) return this.inventory.close();
-        this.parent.open(this.player);
-        return -1;
+        return this.close((byte) 0);
     }
 
+    @Override
     public int closeAll() {
+        return this.close((byte) 1);
+    }
+
+    @Override
+    public int close(byte exitFlag) {
+        this.exitFlag = exitFlag;
         return this.inventory.close();
     }
 
@@ -311,6 +319,9 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         public void onInventoryClose(@NonNull InventoryCloseEvent event) {
             if (!(event.getInventory().getHolder() instanceof AbstractGui<?> gui)) return;
             gui.stopTicking();
+            if ((gui.exitFlag & 1) == 1 && gui.parent != null) {
+                gui.parent.open(gui.player);
+            }
             gui.onClose.run(event);
         }
 

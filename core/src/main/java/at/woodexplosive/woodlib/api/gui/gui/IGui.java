@@ -118,6 +118,11 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
     int closeAll();
 
     /**
+     * Closes inventory with given exitFlag
+     */
+    int close(byte exitFlag);
+
+    /**
      * Opens an inventory window with the specified inventory on the top and the player's inventory on the bottom.
      * @param player The player
      * @return The newly opened {@link InventoryView}

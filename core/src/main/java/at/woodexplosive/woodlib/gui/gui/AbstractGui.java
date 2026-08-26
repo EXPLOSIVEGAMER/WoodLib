@@ -1,5 +1,6 @@
 package at.woodexplosive.woodlib.gui.gui;
 
+import at.woodexplosive.woodlib.Scheduler;
 import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.event.GuiClickEvent;
@@ -256,6 +257,16 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     }
 
     @Override
+    public void setExitFlag(byte exitFlag) {
+        this.exitFlag = exitFlag;
+    }
+
+    @Override
+    public byte getExitFlag() {
+        return this.exitFlag;
+    }
+
+    @Override
     public int close() {
         return this.close((byte) 0);
     }
@@ -319,10 +330,18 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         public void onInventoryClose(@NonNull InventoryCloseEvent event) {
             if (!(event.getInventory().getHolder() instanceof AbstractGui<?> gui)) return;
             gui.stopTicking();
-            if ((gui.exitFlag & 1) == 1 && gui.parent != null) {
-                gui.parent.open(gui.player);
+            boolean runOnClose = true;
+            // CLOSE_WITHOUT_PARENT
+            if ((gui.exitFlag & 1) != 1 && gui.parent != null) {
+                Scheduler.next(() -> gui.parent.open(gui.player));
             }
-            gui.onClose.run(event);
+            // SKIP_ONCLOSE
+            if ((gui.exitFlag & 2) == 0) {
+                runOnClose = false;
+            }
+
+            if (runOnClose) gui.onClose.run(event);
+            gui.exitFlag = 0;
         }
 
         @EventHandler(ignoreCancelled = true)

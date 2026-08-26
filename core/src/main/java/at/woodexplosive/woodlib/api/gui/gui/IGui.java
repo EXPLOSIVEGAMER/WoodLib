@@ -1,15 +1,10 @@
 package at.woodexplosive.woodlib.api.gui.gui;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
-import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
@@ -122,6 +117,31 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      */
     int close(byte exitFlag);
 
+    default int close(GuiExitFlag... exitFlags) {
+        return this.close(GuiExitFlag.combineFlags(exitFlags));
+    }
+
+    /**
+     * Gets the Gui's exit flag
+     * @return the exit flag
+     */
+    byte getExitFlag();
+
+    /**
+     * Sets the Gui's exit flag
+     * @param exitFlag the exit flag
+     */
+    void setExitFlag(byte exitFlag);
+
+    default void setExitFlags(GuiExitFlag... flags) {
+        this.setExitFlag(GuiExitFlag.combineFlags(flags));
+    }
+
+    default void addExitFlags(byte flag) {
+        byte newFlag = (byte) (this.getExitFlag() | flag);
+        this.setExitFlag(newFlag);
+    }
+
     /**
      * Opens an inventory window with the specified inventory on the top and the player's inventory on the bottom.
      * @param player The player
@@ -145,6 +165,7 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
     /** Re-opens the GUI for its current {@link #getPlayer() player} to reflect changed contents. */
     default void redraw() {
         if (this.getPlayer() == null) return;
+        this.setExitFlag((byte) 3);
         this.open(this.getPlayer());
     }
 

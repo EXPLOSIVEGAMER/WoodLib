@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Fired when an {@link ITabbedGui} is about to change its active tab. Cancelling prevents the change.
  */
-public class GuiTabChangeEvent extends GuiEvent implements Cancellable {
+public class GuiTabChangeEvent extends GuiBaseEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final ITab oldTab;

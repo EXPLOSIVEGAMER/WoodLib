@@ -3,9 +3,7 @@ package at.woodexplosive.woodlib.gui.gui;
 import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.element.ITab;
-import at.woodexplosive.woodlib.api.gui.event.GuiPageChangeEvent;
-import at.woodexplosive.woodlib.api.gui.event.GuiTabChangeEvent;
-import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
+import at.woodexplosive.woodlib.api.gui.event.*;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import at.woodexplosive.woodlib.api.gui.gui.IPagedGui;
 import at.woodexplosive.woodlib.api.gui.gui.ITabbedGui;
@@ -15,9 +13,6 @@ import at.woodexplosive.woodlib.gui.element.GuiElementBuilder;
 import at.woodexplosive.woodlib.gui.element.PagedTab;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
@@ -89,8 +84,9 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
      * @param parent             the parent Gui can be null if there's none
      */
     private SimpleTabbedPagedGui(@NotNull Component title, int size, @Nullable InventoryType type,
-                                 @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen,
-                                 @NotNull Callback<InventoryDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
+                                 @NotNull Callback<GuiCloseEvent> onClose, @NotNull Callback<GuiOpenEvent> onOpen,
+                                 @NotNull Callback<GuiInteractEvent> onInteract,
+                                 @NotNull Callback<GuiDragEvent> onDrag, @NotNull Callback<GuiTickEvent> onTick,
                                  IGuiElement.@NotNull ClickCallback onClickGlobal,
                                  @NotNull Callback<GuiPageChangeEvent> onPageChange,
                                  @NotNull Callback<GuiTabChangeEvent> onTabChange,
@@ -98,7 +94,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
                                  @Nullable IGui<?> parent
     ) {
 
-        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation, parent);
+        super(title, size, type, onClose, onOpen, onInteract, onDrag, onTick, onClickGlobal, playerManipulation, parent);
         this.onPageChange = onPageChange;
         this.onTabChange = onTabChange;
         this.tabSlots = tabSlots;
@@ -109,8 +105,8 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         super();
         this.tabSlots = tabSlots();
         this.pageSlots = pageSlots();
-        this.onPageChange = onPageChange();
-        this.onTabChange = onTabChange();
+        this.onPageChange = this::onPageChange;
+        this.onTabChange = this::onTabChange;
 
         this.init();
     }
@@ -123,12 +119,12 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         return List.of();
     }
 
-    protected @NotNull Callback<GuiPageChangeEvent> onPageChange() {
-        return IGui.emptyCallback();
+    protected boolean onPageChange(@NotNull GuiPageChangeEvent event) {
+        return false;
     }
 
-    protected @NotNull Callback<GuiTabChangeEvent> onTabChange() {
-        return IGui.emptyCallback();
+    protected boolean onTabChange(@NotNull GuiTabChangeEvent event) {
+        return false;
     }
 
     /**
@@ -158,6 +154,11 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     // ---- Tabbed ----
+
+    @Override
+    public @Nullable InventoryView open(@NotNull Player player, @Nullable ITab tab) {
+        return this.open(player, tab, 0);
+    }
 
     @Override
     public @NonNull List<ITab> getTabs() {
@@ -208,6 +209,11 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
     }
 
     // ---- Paged (acts on the active tab's own element list) ----
+
+    @Override
+    public @Nullable InventoryView open(@NotNull Player player, int page) {
+        return this.open(player, this.activeTab, page);
+    }
 
     @Override
     public @NonNull LinkedList<IGuiElement> getPageElements() {
@@ -286,11 +292,20 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         return this;
     }
 
-    @Override
-    public @Nullable InventoryView open(@NonNull Player player) {
+    // Paged Tabbed
+
+    public @Nullable InventoryView open(@NonNull Player player, @Nullable ITab tab, int page) {
+        this.activeTab = tab;
+        this.page = page;
         this.populateTabs();
         this.populatePage();
         return super.open(player);
+    }
+
+    @Override
+    public void redraw() {
+        if (this.player == null) return;
+        this.open(this.player, this.activeTab, this.page);
     }
 
     // ---- Builder ----
@@ -308,9 +323,10 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         private List<Integer> pageSlots = new ArrayList<>();
         private final List<ITab> tabs = new ArrayList<>();
         private boolean playerManipulation = false;
-        private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
-        private Callback<InventoryOpenEvent> onOpen = IGui.emptyCallback();
-        private Callback<InventoryDragEvent> onDrag = IGui.emptyCallback();
+        private Callback<GuiCloseEvent> onClose = IGui.emptyCallback();
+        private Callback<GuiOpenEvent> onOpen = IGui.emptyCallback();
+        private Callback<GuiInteractEvent> onInteract = IGui.emptyCallback();
+        private Callback<GuiDragEvent> onDrag = IGui.emptyCallback();
         private Callback<GuiTickEvent> onTick = IGui.emptyCallback();
         private Callback<GuiPageChangeEvent> onPageChange = IGui.emptyCallback();
         private Callback<GuiTabChangeEvent> onTabChange = IGui.emptyCallback();
@@ -341,19 +357,25 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         }
 
         @Override
-        public Builder setOnClose(@NotNull Callback<InventoryCloseEvent> onClose) {
+        public Builder setOnClose(@NotNull Callback<GuiCloseEvent> onClose) {
             this.onClose = onClose;
             return this;
         }
 
         @Override
-        public Builder setOnOpen(@NotNull Callback<InventoryOpenEvent> onOpen) {
+        public Builder setOnOpen(@NotNull Callback<GuiOpenEvent> onOpen) {
             this.onOpen = onOpen;
             return this;
         }
 
         @Override
-        public Builder setOnDrag(@NotNull Callback<InventoryDragEvent> onDrag) {
+        public Builder setOnInteract(@NotNull IGui.Callback<GuiInteractEvent> onInteract) {
+            this.onInteract = onInteract;
+            return this;
+        }
+
+        @Override
+        public Builder setOnDrag(@NotNull Callback<GuiDragEvent> onDrag) {
             this.onDrag = onDrag;
             return this;
         }
@@ -499,7 +521,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
         @Override
         public @NonNull SimpleTabbedPagedGui build() {
-            SimpleTabbedPagedGui gui = new SimpleTabbedPagedGui(title, size, type, onClose, onOpen, onDrag, onTick,
+            SimpleTabbedPagedGui gui = new SimpleTabbedPagedGui(title, size, type, onClose, onOpen, onInteract, onDrag, onTick,
                     onClickGlobal, onPageChange, onTabChange, playerManipulation, tabSlots, pageSlots,
                     parent);
             for (ITab tab : this.tabs) gui.addTab(tab);

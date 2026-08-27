@@ -9,14 +9,14 @@ import org.jetbrains.annotations.NotNull;
  * originated from.
  *
  */
-public abstract class GuiEvent extends Event implements IGuiEvent {
+public abstract class GuiBaseEvent extends Event implements IGuiEvent {
     /** The GUI this event was fired for. */
     protected final IGui<?> gui;
 
     /**
      * @param gui the GUI this event is fired for
      */
-    public GuiEvent(@NotNull IGui<?> gui) {
+    public GuiBaseEvent(@NotNull IGui<?> gui) {
         this.gui = gui;
     }
 

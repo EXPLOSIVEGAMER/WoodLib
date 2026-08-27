@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Common contract for events fired by a WoodLib {@link IGui}, exposing the GUI the event originated
- * from. Implemented by {@link GuiEvent} (custom Bukkit events) and separately by {@link GuiClickEvent}
+ * from. Implemented by {@link GuiBaseEvent} (custom Bukkit events) and separately by {@link GuiClickEvent}
  * (which extends the native {@link org.bukkit.event.inventory.InventoryClickEvent} instead).
  */
 public interface IGuiEvent {
@@ -24,7 +24,7 @@ public interface IGuiEvent {
      * @return the source GUI, cast to {@code G}
      * @throws ClassCastException if the GUI is not an instance of {@code clazz}
      */
-    default <G extends IGui<G>> G castGui(@NotNull Class<G> clazz) {
+    default <G extends IGui<?>> G castGui(@NotNull Class<G> clazz) {
         return clazz.cast(this.getGui());
     }
 }

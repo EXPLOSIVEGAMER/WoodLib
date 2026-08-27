@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  * Fired when an {@link IPagedGui} is about to change its page. Cancelling the event prevents the
  * page change.
  */
-public class GuiPageChangeEvent extends GuiEvent implements Cancellable {
+public class GuiPageChangeEvent extends GuiBaseEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final int maxPage;

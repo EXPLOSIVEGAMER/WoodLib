@@ -1,7 +1,7 @@
 package at.woodexplosive.woodlib.api.gui.gui.builder;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
-import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
+import at.woodexplosive.woodlib.api.gui.event.*;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -25,7 +25,7 @@ public interface IGuiBuilder<T extends IGuiBuilder<T, G>, G extends IGui<G>> {
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    T setOnClose(final @NotNull IGui.Callback<InventoryCloseEvent> onClose);
+    T setOnClose(final @NotNull IGui.Callback<GuiCloseEvent> onClose);
 
     /**
      * Sets the callback run when the GUI is opened.
@@ -34,7 +34,10 @@ public interface IGuiBuilder<T extends IGuiBuilder<T, G>, G extends IGui<G>> {
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    T setOnOpen(final @NotNull IGui.Callback<InventoryOpenEvent> onOpen);
+    T setOnOpen(final @NotNull IGui.Callback<GuiOpenEvent> onOpen);
+
+    @Contract(value = "_ -> this")
+    T setOnInteract(final @NotNull IGui.Callback<GuiInteractEvent> onInteract);
 
     /**
      * Sets the callback run when items are dragged across the GUI.
@@ -43,7 +46,7 @@ public interface IGuiBuilder<T extends IGuiBuilder<T, G>, G extends IGui<G>> {
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    T setOnDrag(final @NotNull IGui.Callback<InventoryDragEvent> onDrag);
+    T setOnDrag(final @NotNull IGui.Callback<GuiDragEvent> onDrag);
 
     /**
      * Sets the callback run every server tick while the GUI is open.

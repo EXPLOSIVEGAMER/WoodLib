@@ -2,8 +2,11 @@ package at.woodexplosive.woodlib.api.gui.gui;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.gui.element.GuiElement;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -21,6 +24,8 @@ import java.util.List;
  * @param <T> the concrete paged-GUI type, for fluent self-returning methods (CRTP)
  */
 public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
+
+    @Nullable InventoryView open(@NotNull Player player, int page);
 
     /**
      * Returns the backing list of all page elements (across every page).
@@ -195,5 +200,17 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
     default void previousPage() {
         int newPage = Math.max(0, this.getPage() - 1);
         this.setPage(newPage);
+    }
+
+    @Override
+    default void redraw() {
+        if (this.getPlayer() == null) return;
+        this.setExitFlag((byte) 3);
+        this.open(this.getPlayer(), this.getPage());
+    }
+
+    @Override
+    default @Nullable InventoryView open(@NotNull Player player) {
+        return this.open(player, 0);
     }
 }

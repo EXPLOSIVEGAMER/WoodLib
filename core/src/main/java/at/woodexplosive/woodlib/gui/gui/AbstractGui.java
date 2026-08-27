@@ -3,8 +3,7 @@ package at.woodexplosive.woodlib.gui.gui;
 import at.woodexplosive.woodlib.Scheduler;
 import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
-import at.woodexplosive.woodlib.api.gui.event.GuiClickEvent;
-import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
+import at.woodexplosive.woodlib.api.gui.event.*;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import at.woodexplosive.woodlib.api.gui.gui.Listener.IGuiListener;
 import at.woodexplosive.woodlib.gui.element.GuiElement;
@@ -54,11 +53,13 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     /** Standalone click callbacks set via {@link #setSlotCallback(int, IGuiElement.ClickCallback)}, keyed by slot index. */
     protected final Map<Integer, IGuiElement.ClickCallback> slotCallbacks = new HashMap<>();
     /** Callback run when the inventory is closed. */
-    protected final Callback<InventoryCloseEvent> onClose;
+    protected final Callback<GuiCloseEvent> onClose;
     /** Callback run when the inventory is opened. */
-    protected final Callback<InventoryOpenEvent> onOpen;
+    protected final Callback<GuiOpenEvent> onOpen;
+    /** Callback run when interacting with the gui in any way */
+    private final Callback<GuiInteractEvent> onInteract;
     /** Callback run when items are dragged across the inventory. */
-    protected final Callback<InventoryDragEvent> onDrag;
+    protected final Callback<GuiDragEvent> onDrag;
     /** Callback run every server tick while the GUI is open. */
     protected final Callback<GuiTickEvent> onTick;
     /** Global click callback run for every click in the GUI, before per-slot callbacks. */
@@ -72,22 +73,23 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     protected byte exitFlag = 0;
 
     /** The player this GUI was last opened for. */
-    private Player player;
+    protected Player player;
     /** The currently scheduled per-tick update task, or {@code null} while not ticking. */
-    private BukkitTask tickTask;
+    protected BukkitTask tickTask;
 
     /**
-     * @param title the inventory title
-     * @param size the inventory size (multiple of 9); ignored if {@code type} is non-null
-     * @param type the inventory type, or {@code null} to create a plain chest inventory of {@code size}
-     * @param onClose the close callback
-     * @param onOpen the open callback
-     * @param onDrag the drag callback
-     * @param onTick the per-tick callback
-     * @param onClickGlobal the global click callback
+     * @param title              the inventory title
+     * @param size               the inventory size (multiple of 9); ignored if {@code type} is non-null
+     * @param type               the inventory type, or {@code null} to create a plain chest inventory of {@code size}
+     * @param onClose            the close callback
+     * @param onOpen             the open callback
+     * @param onInteract         the interact callback
+     * @param onDrag             the drag callback
+     * @param onTick             the per-tick callback
+     * @param onClickGlobal      the global click callback
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
      */
-    protected AbstractGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
+    protected AbstractGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<GuiCloseEvent> onClose, @NotNull Callback<GuiOpenEvent> onOpen, Callback<GuiInteractEvent> onInteract, @NotNull Callback<GuiDragEvent> onDrag,
                           @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation, @Nullable IGui<?> parent) {
         this.parent = parent;
 
@@ -98,6 +100,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         this.title = title;
         this.onClose = onClose;
         this.onOpen = onOpen;
+        this.onInteract = onInteract;
         this.onDrag = onDrag;
         this.onTick = onTick;
         this.onClickGlobal = onClickGlobal;
@@ -112,11 +115,12 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
                 : Bukkit.createInventory(self(), size(), title());
 
         this.title = title();
-        this.onClose = onClose();
-        this.onOpen = onOpen();
-        this.onDrag = onDrag();
-        this.onTick = onTick();
-        this.onClickGlobal = onClickGlobal();
+        this.onClose = this::onClose;
+        this.onOpen = this::onOpen;
+        this.onInteract = this::onInteract;
+        this.onDrag = this::onDrag;
+        this.onTick = this::onTick;
+        this.onClickGlobal = this::onClickGlobal;
         this.playerManipulation = playerManipulation();
     }
 
@@ -138,24 +142,28 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         return 0;
     }
 
-    protected @NotNull Callback<InventoryCloseEvent> onClose() {
-        return IGui.emptyCallback();
+    protected boolean onClose(@NotNull InventoryCloseEvent event) {
+        return false;
     }
 
-    protected @NotNull Callback<InventoryOpenEvent> onOpen() {
-        return IGui.emptyCallback();
+    protected boolean onOpen(@NotNull InventoryOpenEvent event) {
+        return false;
     }
 
-    protected @NotNull Callback<InventoryDragEvent> onDrag() {
-        return IGui.emptyCallback();
+    protected boolean onInteract(@NotNull GuiInteractEvent event) {
+        return false;
     }
 
-    protected @NotNull Callback<GuiTickEvent> onTick() {
-        return IGui.emptyCallback();
+    protected boolean onDrag(@NotNull InventoryDragEvent event) {
+        return false;
     }
 
-    protected @NotNull IGuiElement.ClickCallback onClickGlobal() {
-        return IGuiElement.EMPTY_CALLBACK;
+    protected boolean onTick(@NotNull GuiTickEvent event) {
+        return false;
+    }
+
+    protected boolean onClickGlobal(@NotNull GuiClickEvent event) {
+        return false;
     }
 
     protected boolean playerManipulation() {
@@ -340,7 +348,8 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
                 runOnClose = false;
             }
 
-            if (runOnClose) gui.onClose.run(event);
+            if (runOnClose) gui.onClose.run(new GuiCloseEvent(event.getView(), gui));
+            new GuiCloseEvent(event.getView(), gui).callEvent();
             gui.exitFlag = 0;
         }
 
@@ -348,7 +357,8 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         @Override
         public void onInventoryOpen(@NonNull InventoryOpenEvent event) {
             if (event.getInventory().getHolder() instanceof AbstractGui<?> gui) {
-                boolean cancel = gui.onOpen.run(event);
+                boolean cancel = gui.onOpen.run(new GuiOpenEvent(event.getView(), gui));
+                if (!(new GuiOpenEvent(event.getView(), gui).callEvent())) cancel = true;
                 event.setCancelled(cancel);
             }
         }
@@ -384,10 +394,20 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         @Override
         public void onInventoryDrag(@NonNull InventoryDragEvent event) {
             if (event.getInventory().getHolder() instanceof AbstractGui<?> gui) {
-                boolean cancel = gui.onDrag.run(event);
+                boolean cancel = gui.onDrag.run(new GuiDragEvent(event.getView(), event.getCursor(), event.getOldCursor(), event.getType().equals(DragType.SINGLE), event.getNewItems(), gui));
+                if (!(new GuiDragEvent(event.getView(), event.getCursor(), event.getOldCursor(), event.getType().equals(DragType.SINGLE), event.getNewItems(), gui).callEvent())) cancel = true;
                 event.setCancelled(cancel);
             }
         }
 
+        @EventHandler(ignoreCancelled = true)
+        @Override
+        public void onInventoryInteract(@NotNull InventoryInteractEvent event) {
+            if (event.getInventory().getHolder() instanceof AbstractGui<?> gui) {
+                boolean cancel = gui.onInteract.run(new GuiInteractEvent(event.getView(), gui));
+                if (!(new GuiInteractEvent(event.getView(), gui).callEvent())) cancel = true;
+                event.setCancelled(cancel);
+            }
+        }
     }
 }

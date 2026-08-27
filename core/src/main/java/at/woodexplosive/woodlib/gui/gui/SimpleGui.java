@@ -1,7 +1,7 @@
 package at.woodexplosive.woodlib.gui.gui;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
-import at.woodexplosive.woodlib.api.gui.event.GuiTickEvent;
+import at.woodexplosive.woodlib.api.gui.event.*;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
 import at.woodexplosive.woodlib.api.gui.gui.builder.IGuiBuilder;
 import net.kyori.adventure.text.Component;
@@ -38,9 +38,10 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
      * @param playerManipulation {@code true} to allow the player to move items in the inventory
      * @param parent             the parent Gui can be null if there's none
      */
-    private SimpleGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<InventoryCloseEvent> onClose, @NotNull Callback<InventoryOpenEvent> onOpen, @NotNull Callback<InventoryDragEvent> onDrag,
+    private SimpleGui(@NotNull Component title, int size, @Nullable InventoryType type, @NotNull Callback<GuiCloseEvent> onClose, @NotNull Callback<GuiOpenEvent> onOpen, @NotNull Callback<GuiInteractEvent> onInteract,
+                      @NotNull Callback<GuiDragEvent> onDrag,
                       @NotNull Callback<GuiTickEvent> onTick, IGuiElement.@NotNull ClickCallback onClickGlobal, boolean playerManipulation, IGui<?> parent) {
-        super(title, size, type, onClose, onOpen, onDrag, onTick, onClickGlobal, playerManipulation, parent);
+        super(title, size, type, onClose, onOpen, onInteract, onDrag, onTick, onClickGlobal, playerManipulation, parent);
     }
 
     protected SimpleGui() {
@@ -83,9 +84,10 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
         private final @Nullable IGui<?> parent;
 
         private boolean playerManipulation = false;
-        private Callback<InventoryCloseEvent> onClose = IGui.emptyCallback();
-        private Callback<InventoryOpenEvent> onOpen = IGui.emptyCallback();
-        private Callback<InventoryDragEvent> onDrag = IGui.emptyCallback();
+        private Callback<GuiCloseEvent> onClose = IGui.emptyCallback();
+        private Callback<GuiOpenEvent> onOpen = IGui.emptyCallback();
+        private Callback<GuiInteractEvent> onInteract = IGui.emptyCallback();
+        private Callback<GuiDragEvent> onDrag = IGui.emptyCallback();
         private Callback<GuiTickEvent> onTick = IGui.emptyCallback();
         private IGuiElement.ClickCallback onClickGlobal = IGuiElement.EMPTY_CALLBACK;
 
@@ -112,20 +114,27 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
             this.type = type;
             this.parent = parent;
         }
+
         @Override
-        public Builder setOnClose(@NotNull Callback<InventoryCloseEvent> onClose) {
+        public Builder setOnClose(@NotNull Callback<GuiCloseEvent> onClose) {
             this.onClose = onClose;
             return this;
         }
 
         @Override
-        public Builder setOnOpen(@NotNull IGui.Callback<InventoryOpenEvent> onOpen) {
+        public Builder setOnOpen(@NotNull Callback<GuiOpenEvent> onOpen) {
             this.onOpen = onOpen;
             return this;
         }
 
         @Override
-        public Builder setOnDrag(@NotNull IGui.Callback<InventoryDragEvent> onDrag) {
+        public Builder setOnInteract(@NotNull IGui.Callback<GuiInteractEvent> onInteract) {
+            this.onInteract = onInteract;
+            return this;
+        }
+
+        @Override
+        public Builder setOnDrag(@NotNull Callback<GuiDragEvent> onDrag) {
             this.onDrag = onDrag;
             return this;
         }
@@ -150,7 +159,7 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
 
         @Override
         public @NonNull SimpleGui build() {
-            return new SimpleGui(this.title, this.size, this.type, this.onClose, this.onOpen, this.onDrag, this.onTick, this.onClickGlobal, this.playerManipulation, parent);
+            return new SimpleGui(this.title, this.size, this.type, this.onClose, this.onOpen, this.onInteract, this.onDrag, this.onTick, this.onClickGlobal, this.playerManipulation, parent);
         }
     }
 }

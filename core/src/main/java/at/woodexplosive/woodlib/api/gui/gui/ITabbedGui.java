@@ -3,6 +3,8 @@ package at.woodexplosive.woodlib.api.gui.gui;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.element.ITab;
 import at.woodexplosive.woodlib.gui.element.GuiElementBuilder;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.InventoryView;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +24,8 @@ import java.util.List;
  * @param <T> the concrete tabbed-GUI type, for fluent self-returning methods (CRTP)
  */
 public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
+
+    @Nullable InventoryView open(@NotNull Player player, @Nullable ITab tab);
 
     /**
      * Returns the tabs of this GUI, in order.
@@ -131,5 +135,16 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
     default void populateContent() {
         ITab tab = this.getTab();
         if (tab != null) tab.populateContents(this);
+    }
+
+    @Override
+    default void redraw() {
+        if (this.getPlayer() == null || this.getTab() == null) return;
+        this.open(this.getPlayer(), this.getTab());
+    }
+
+    @Override
+    default @Nullable InventoryView open(@NotNull Player player) {
+        return this.open(player, null);
     }
 }

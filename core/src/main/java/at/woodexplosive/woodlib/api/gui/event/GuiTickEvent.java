@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Fired once per server tick for every open {@link IGui}, driving per-tick GUI updates.
  */
-public class GuiTickEvent extends GuiEvent {
+public class GuiTickEvent extends GuiBaseEvent {
     private static final HandlerList HANDLERS = new HandlerList();
 
     /**

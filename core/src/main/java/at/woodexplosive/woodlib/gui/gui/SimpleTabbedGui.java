@@ -1,5 +1,6 @@
 package at.woodexplosive.woodlib.gui.gui;
 
+import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.element.ITab;
 import at.woodexplosive.woodlib.api.gui.event.*;
@@ -172,11 +173,27 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
     }
 
     @Override
+    public SimpleTabbedGui addSlot(@NotNull IGuiElement element) {
+        int slot = this.firstTrueEmpty();
+        if (slot != -1) {
+            this.setSlot(slot, element);
+        } else {
+            WoodLib.logger().error("There are no more slots empty in {}!", this);
+        }
+        return this;
+    }
+
+    @Override
     public @Nullable InventoryView open(@NonNull Player player, ITab tab) {
         this.activeTab = tab;
         this.populateTabs();
         this.populateContent();
         return super.open(player);
+    }
+
+    @Override
+    public @Nullable InventoryView open(@NonNull Player player) {
+        return this.open(player, this.activeTab);
     }
 
     // Builder

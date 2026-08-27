@@ -127,19 +127,19 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     protected void init() {}
 
     protected @NotNull Component title() {
-        return Component.empty();
+        return this.title == null ? Component.empty() : this.title;
     }
 
     protected @Nullable IGui<?> parent() {
-        return null;
+        return this.parent;
     }
 
     protected @Nullable InventoryType type() {
-        return null;
+        return inventory == null ? null : this.inventory.getType();
     }
 
     protected int size() {
-        return 0;
+        return inventory == null ? 0 : this.inventory.getSize();
     }
 
     protected boolean onClose(@NotNull InventoryCloseEvent event) {
@@ -167,7 +167,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
     }
 
     protected boolean playerManipulation() {
-        return false;
+        return this.playerManipulation;
     }
 
     /**

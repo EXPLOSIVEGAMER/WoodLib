@@ -1,5 +1,6 @@
 package at.woodexplosive.woodlib.gui.gui;
 
+import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.event.*;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
@@ -190,10 +191,26 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
     }
 
     @Override
+    public SimplePagedGui addSlot(@NotNull IGuiElement element) {
+        int slot = this.firstTrueEmpty();
+        if (slot != -1) {
+            this.setSlot(slot, element);
+        } else {
+            WoodLib.logger().error("There are no more slots empty in {}!", this);
+        }
+        return this;
+    }
+
+    @Override
     public @Nullable InventoryView open(@NonNull Player player, int page) {
         this.page = page;
         this.populatePage();
         return super.open(player);
+    }
+
+    @Override
+    public @Nullable InventoryView open(@NonNull Player player) {
+        return this.open(player, 0);
     }
 
     // Builder

@@ -9,9 +9,12 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -81,5 +84,10 @@ public interface ICustomBlock {
         String sID = meta.getPersistentDataContainer().get(idKey(), PersistentDataType.STRING);
         if (sID == null) return null;
         return NamespacedKey.fromString(sID);
+    }
+
+    @Contract(value = "-> new", pure = true)
+    static @NotNull Transformation emptyTransformation() {
+        return new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf());
     }
 }

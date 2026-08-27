@@ -294,12 +294,33 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     // Paged Tabbed
 
+    @Override
+    public int firstTrueEmpty() {
+        return ITabbedGui.super.firstTrueEmpty();
+    }
+
+    @Override
+    public SimpleTabbedPagedGui addSlot(@NotNull IGuiElement element) {
+        int slot = this.firstTrueEmpty();
+        if (slot != -1) {
+            this.setSlot(slot, element);
+        } else {
+            WoodLib.logger().error("There are no more slots empty in {}!", this);
+        }
+        return this;
+    }
+
     public @Nullable InventoryView open(@NonNull Player player, @Nullable ITab tab, int page) {
         this.activeTab = tab;
         this.page = page;
         this.populateTabs();
         this.populatePage();
         return super.open(player);
+    }
+
+    @Override
+    public @Nullable InventoryView open(@NonNull Player player) {
+        return this.open(player, this.activeTab, 0);
     }
 
     @Override

@@ -5,6 +5,7 @@ import at.woodexplosive.woodlib.api.gui.element.ITab;
 import at.woodexplosive.woodlib.gui.element.GuiElementBuilder;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +27,10 @@ import java.util.List;
 public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
 
     @Nullable InventoryView open(@NotNull Player player, @Nullable ITab tab);
+
+
+    @Override
+    @Nullable InventoryView open(@NotNull Player player);
 
     /**
      * Returns the tabs of this GUI, in order.
@@ -87,6 +92,15 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
     @Contract(pure = true)
     @NotNull List<Integer> getContentSlots();
 
+    default int firstTrueEmpty() {
+        for (int i = 0; i < this.getInventory().getSize(); i++) {
+            if (this.getContentSlots().contains(i) || this.getTabSlots().contains(i)) continue;
+            ItemStack item = this.getInventory().getItem(i);
+            if (item == null || item.isEmpty()) return i;
+        }
+        return -1;
+    }
+
     /**
      * Returns the index of the active tab within {@link #getTabs()}.
      * @return the active tab index, or {@code -1} if there is no active tab
@@ -141,10 +155,5 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
     default void redraw() {
         if (this.getPlayer() == null || this.getTab() == null) return;
         this.open(this.getPlayer(), this.getTab());
-    }
-
-    @Override
-    default @Nullable InventoryView open(@NotNull Player player) {
-        return this.open(player, null);
     }
 }

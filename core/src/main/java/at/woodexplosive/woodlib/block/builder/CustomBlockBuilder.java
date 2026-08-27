@@ -11,8 +11,11 @@ import at.woodexplosive.woodlib.block.CustomBlock;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.util.BlockVector;
+import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
@@ -24,7 +27,7 @@ import java.util.function.Consumer;
  *
  * <p>A CustomBlock has one or more {@link CustomBlockPart}s, each with a position relative to the
  * structure's placement origin. Use {@link #single(List)} for the common single-block case, or
- * {@link #part(int, int, int, Material, List)} repeatedly for multi-block structures.</p>
+ * {@link #part(int, int, int, float, float, float, Material, List)} repeatedly for multi-block structures.</p>
  */
 public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlockBuilder> {
 
@@ -71,9 +74,10 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
      * @param displays the {@link DisplayDefinition}s rendered at this part
      * @return this builder for chaining
      */
-    @Contract(value = "_, _, _, _, _ -> this")
-    public @NotNull CustomBlockBuilder part(int x, int y, int z, @NotNull Material barrierMaterial, @NotNull List<DisplayDefinition> displays) {
-        return part(new CustomBlockPart(new BlockVector(x, y, z), barrierMaterial, displays));
+    @Contract(value = "_, _, _, _, _, _, _, _ -> this")
+    public @NotNull CustomBlockBuilder part(int x, int y, int z, float sx, float sy, float sz, @NotNull Material barrierMaterial, @NotNull List<DisplayDefinition> displays) {
+        Transformation transformation = new Transformation(new Vector3f(0, 0, 0), new Quaternionf(), new Vector3f(sx, sy, sz), new Quaternionf());
+        return part(new CustomBlockPart(new BlockVector(x, y, z), transformation, barrierMaterial, displays));
     }
 
     /**
@@ -85,9 +89,9 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
      * @param displays the {@link DisplayDefinition}s rendered at this part
      * @return this builder for chaining
      */
-    @Contract(value = "_, _, _, _ -> this")
-    public @NotNull CustomBlockBuilder part(int x, int y, int z, @NotNull List<DisplayDefinition> displays) {
-        return part(x, y, z, Material.BARRIER, displays);
+    @Contract(value = "_, _, _, _, _, _, _ -> this")
+    public @NotNull CustomBlockBuilder part(int x, int y, int z, float sx, float sy, float sz, @NotNull List<DisplayDefinition> displays) {
+        return part(x, y, z, sx, sy, sz, Material.BARRIER, displays);
     }
 
     /**
@@ -98,7 +102,7 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
      */
     @Contract(value = "_ -> this")
     public @NotNull CustomBlockBuilder single(@NotNull List<DisplayDefinition> displays) {
-        return part(0, 0, 0, displays);
+        return part(0, 0, 0, 1, 1, 1, displays);
     }
 
     /**

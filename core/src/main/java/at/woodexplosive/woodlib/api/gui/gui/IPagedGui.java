@@ -4,6 +4,7 @@ import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.gui.element.GuiElement;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,6 +27,9 @@ import java.util.List;
 public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
 
     @Nullable InventoryView open(@NotNull Player player, int page);
+
+    @Override
+    @Nullable InventoryView open(@NotNull Player player);
 
     /**
      * Returns the backing list of all page elements (across every page).
@@ -115,6 +119,20 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
      */
     @Contract(value = "-> _", pure = true)
     @NotNull List<Integer> getPageSlots();
+
+    /**
+     * Returns first slot index that is empty and not a page slot
+     * @return first empty slot index, otherwise -1
+     */
+    @Contract(value = "-> _", pure = true)
+    default int firstTrueEmpty() {
+        for (int i = 0; i < this.getInventory().getSize(); i++) {
+            if (this.getPageSlots().contains(i)) continue;
+            ItemStack item = this.getInventory().getItem(i);
+            if (item == null || item.isEmpty()) return i;
+        }
+        return -1;
+    }
 
     /**
      * Places an element at {@code slot} that advances to the next page when clicked. If the element
@@ -207,10 +225,5 @@ public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
         if (this.getPlayer() == null) return;
         this.setExitFlag((byte) 3);
         this.open(this.getPlayer(), this.getPage());
-    }
-
-    @Override
-    default @Nullable InventoryView open(@NotNull Player player) {
-        return this.open(player, 0);
     }
 }

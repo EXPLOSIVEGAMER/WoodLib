@@ -93,7 +93,7 @@ final class CustomBlockRuntime {
      * @param steps the rotation, in 90° steps
      * @return the rotated transformation
      */
-    static @NotNull Transformation rotateTransformation(@NotNull Transformation transformation, int steps) {
+    static @NotNull Transformation createTransformation(@NotNull Transformation transformation, int steps) {
         int normalized = normalizeSteps(steps);
         if (normalized == 0) return transformation;
 
@@ -169,7 +169,7 @@ final class CustomBlockRuntime {
             data.set(CustomBlockKeys.partIndex(), PersistentDataType.INTEGER, i);
 
             for (DisplayDefinition display : part.displays()) {
-                spawnDisplay(target, origin, customBlock.id(), display, rotationSteps);
+                spawnDisplay(target, origin, customBlock.id(), display, part.transformation(), rotationSteps);
             }
         }
     }
@@ -202,22 +202,38 @@ final class CustomBlockRuntime {
      * @param origin the structure's placement origin (stamped on the entity for later lookup)
      * @param customBlockId the owning CustomBlock's id (stamped on the entity for later lookup)
      * @param display the display's visual configuration
+     * @param partTransformation the owning part's transformation, combined onto the display's own
      * @param rotationSteps the rotation the structure was placed at
      */
     private static void spawnDisplay(@NotNull Block target, @NotNull Block origin, @NotNull NamespacedKey customBlockId,
-                                      @NotNull DisplayDefinition display, int rotationSteps) {
+                                      @NotNull DisplayDefinition display, @NotNull Transformation partTransformation, int rotationSteps) {
         Location location = target.getLocation();
         switch (display) {
             case DisplayDefinition.OfBlock ofBlock -> target.getWorld().spawn(location, BlockDisplay.class, entity -> {
                 entity.setBlock(ofBlock.blockData());
-                configureCommon(entity, display, origin, customBlockId, rotationSteps);
+                configureCommon(entity, display, origin, customBlockId, partTransformation, rotationSteps);
             });
             case DisplayDefinition.OfItem ofItem -> target.getWorld().spawn(location, ItemDisplay.class, entity -> {
                 entity.setItemStack(ofItem.itemStack());
                 entity.setItemDisplayTransform(ofItem.itemTransform());
-                configureCommon(entity, display, origin, customBlockId, rotationSteps);
+                configureCommon(entity, display, origin, customBlockId, partTransformation, rotationSteps);
             });
         }
+    }
+
+    /**
+     * Combines a part-level {@link Transformation} with a display's own: translations add, rotations
+     * compose (part outer), and scales multiply component-wise.
+     * @param part the owning part's transformation
+     * @param display the display's own transformation
+     * @return the combined transformation
+     */
+    private static @NotNull Transformation combineTransformations(@NotNull Transformation part, @NotNull Transformation display) {
+        Vector3f translation = new Vector3f(part.getTranslation()).add(display.getTranslation());
+        Quaternionf leftRotation = new Quaternionf(part.getLeftRotation()).mul(new Quaternionf(display.getLeftRotation()));
+        Vector3f scale = new Vector3f(part.getScale()).mul(display.getScale());
+        Quaternionf rightRotation = new Quaternionf(display.getRightRotation()).mul(new Quaternionf(part.getRightRotation()));
+        return new Transformation(translation, leftRotation, scale, rightRotation);
     }
 
     /**
@@ -227,11 +243,14 @@ final class CustomBlockRuntime {
      * @param display the display's visual configuration
      * @param origin the structure's placement origin (stamped on the entity for later lookup)
      * @param customBlockId the owning CustomBlock's id (stamped on the entity for later lookup)
+     * @param partTransformation the owning part's transformation, combined onto the display's own
      * @param rotationSteps the rotation the structure was placed at
      */
     private static void configureCommon(@NotNull Display entity, @NotNull DisplayDefinition display,
-                                         @NotNull Block origin, @NotNull NamespacedKey customBlockId, int rotationSteps) {
-        entity.setTransformation(rotateTransformation(display.transformation(), rotationSteps));
+                                         @NotNull Block origin, @NotNull NamespacedKey customBlockId,
+                                         @NotNull Transformation partTransformation, int rotationSteps) {
+        Transformation combined = combineTransformations(partTransformation, display.transformation());
+        entity.setTransformation(createTransformation(combined, rotationSteps));
         entity.setBillboard(display.billboard());
         if (display.brightness() != null) entity.setBrightness(display.brightness());
         entity.setGlowing(display.glowing());
@@ -336,7 +355,9 @@ final class CustomBlockRuntime {
      * @return {@code origin}'s coordinates as {@code [x, y, z]}, for stamping into persistent data
      */
     private static int[] originArray(@NotNull Block origin) {
-        return new int[]{origin.getX(), origin.getY(), origin.getZ()};
+        return new int[] {
+                origin.getX(), origin.getY(), origin.getZ()
+        };
     }
 
     /**

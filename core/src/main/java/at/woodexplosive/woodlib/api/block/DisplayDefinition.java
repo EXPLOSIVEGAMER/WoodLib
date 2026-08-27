@@ -156,6 +156,17 @@ public sealed interface DisplayDefinition permits DisplayDefinition.OfBlock, Dis
         }
 
         /**
+         * Sets the transform's scale.
+         * @param scale the scale
+         * @return this builder for chaining
+         */
+        @Contract(value = "_ -> this")
+        public Builder scale(@NotNull Vector3f scale) {
+            this.scale = scale;
+            return this;
+        }
+
+        /**
          * Sets the transform's right rotation.
          * @param rightRotation the right rotation
          * @return this builder for chaining
@@ -274,6 +285,17 @@ public sealed interface DisplayDefinition permits DisplayDefinition.OfBlock, Dis
         @Contract(value = "_, _, _ -> this")
         public ItemBuilder scale(float x, float y, float z) {
             this.scale = new Vector3f(x, y, z);
+            return this;
+        }
+
+        /**
+         * Sets the transform's scale.
+         * @param scale the scale
+         * @return this builder for chaining
+         */
+        @Contract(value = "_ -> this")
+        public ItemBuilder scale(@NotNull Vector3f scale) {
+            this.scale = scale;
             return this;
         }
 

@@ -40,6 +40,10 @@ tasks.withType(GenerateModuleMetadata).configureEach {
 shadowJar {
     archiveBaseName.set('woodlib-core')
     archiveClassifier.set('')
+    // packetevents-spigot bringt seine eigene plugin.yml mit (eigenständiges Standalone-Plugin).
+    // core darf laut Design KEINE plugin.yml enthalten - sonst hält Paper die Consumer-Jar für
+    // "PacketEvents" und versucht dessen (unrelocateten) Main-Class-Namen zu laden -> Crash.
+    exclude 'plugin.yml'
 }
 
 publishing {

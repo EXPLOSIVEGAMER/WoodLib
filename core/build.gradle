@@ -30,12 +30,21 @@ tasks.withType(GenerateModuleMetadata).configureEach {
     enabled = false
 }
 
+// packetevents/custom-block-data werden relociert (siehe root build.gradle shadowJar-Relocations)
+// direkt in die published Jar mitgeshaded -> Consumer brauchen weder codemc-repo
+// noch eigenes Shading dieser Libs mehr, POM bleibt frei von diesen Runtime-Dependencies.
+shadowJar {
+    archiveClassifier.set('')
+}
+
 publishing {
     publications {
-        maven(MavenPublication) {
+        shadow(MavenPublication) {
+            from components.shadow
             groupId = 'at.woodexplosive'
             artifactId = 'woodlib-core'
-            from components.java
+            artifact tasks.sourcesJar
+            artifact tasks.javadocJar
         }
     }
 }

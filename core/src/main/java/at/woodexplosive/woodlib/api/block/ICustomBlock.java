@@ -5,7 +5,9 @@ import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockPlaceEvent;
 import at.woodexplosive.woodlib.block.builder.CustomBlockBuilder;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -57,6 +59,63 @@ public interface ICustomBlock {
     @Contract(pure = true)
     default boolean rotatable() {
         return false;
+    }
+
+    /**
+     * This CustomBlock's mining hardness, analogous to a vanilla block's hardness stat: higher values
+     * take longer to mine, taking the mining player's held tool, enchantments and status effects into
+     * account exactly like a vanilla block would. {@code <= 0} (the default) means instant break on
+     * left-click, matching every CustomBlock defined before this existed.
+     * @return the hardness, or {@code <= 0} for instant break
+     */
+    @Contract(pure = true)
+    default float hardness() {
+        return 0f;
+    }
+
+    /**
+     * The vanilla item {@link Tag} a held item must belong to for it to count as the "correct tool" (e.g.
+     * {@link Tag#ITEMS_PICKAXES}). Only consulted when {@link #hardness()} is {@code > 0}. {@code null}
+     * (the default) means hand-mineable - any item (or no item) always counts as correct.
+     * @return the required tool type tag, or {@code null} if none is required
+     */
+    @Contract(pure = true)
+    default @Nullable Tag<Material> requiredToolType() {
+        return null;
+    }
+
+    /**
+     * The minimum {@link ToolTier} a held tool must be to count as "correct" once
+     * {@link #requiredToolType()} already matched. {@code null} (the default) means no minimum - any tier
+     * of the required type works. Only consulted when {@link #requiredToolType()} is non-null.
+     * @return the minimum tool tier, or {@code null} for no minimum
+     */
+    @Contract(pure = true)
+    default @Nullable ToolTier minimumToolTier() {
+        return null;
+    }
+
+    /**
+     * Vanilla block {@link Tag}s this CustomBlock is declared to belong to (e.g. {@link Tag#CROPS}) -
+     * pure metadata for other code to query via {@link #hasBlockTag(Tag)}. Attaching a tag here does
+     * <b>not</b> confer any of its vanilla behavior: every part is a real
+     * {@link org.bukkit.Material#BARRIER Barrier} (or another collision-only material), so growth ticks,
+     * bonemeal, trampling etc. never run on it - those are wired to the actual placed block's own class,
+     * not to tag membership. {@code List.of()} (the default) means no tags declared.
+     * @return the declared block tags
+     */
+    @Contract(pure = true)
+    default @NotNull List<Tag<Material>> blockTags() {
+        return List.of();
+    }
+
+    /**
+     * @param tag the block tag to check
+     * @return {@code true} if {@code tag} is in {@link #blockTags()}
+     */
+    @Contract(pure = true)
+    default boolean hasBlockTag(@NotNull Tag<Material> tag) {
+        return blockTags().contains(tag);
     }
 
     /**

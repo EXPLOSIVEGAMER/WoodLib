@@ -3,6 +3,7 @@ package at.woodexplosive.woodlib.block.builder;
 import at.woodexplosive.woodlib.api.block.CustomBlockPart;
 import at.woodexplosive.woodlib.api.block.DisplayDefinition;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
+import at.woodexplosive.woodlib.api.block.ToolTier;
 import at.woodexplosive.woodlib.api.block.builder.ICustomBlockBuilder;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
@@ -10,10 +11,12 @@ import at.woodexplosive.woodlib.api.block.event.CustomBlockPlaceEvent;
 import at.woodexplosive.woodlib.block.CustomBlock;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.jspecify.annotations.NonNull;
@@ -34,6 +37,10 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
     private final NamespacedKey id;
     private final List<CustomBlockPart> parts = new ArrayList<>();
     private boolean rotatable = false;
+    private float hardness = 0f;
+    private Tag<Material> requiredToolType;
+    private ToolTier minimumToolTier;
+    private List<Tag<Material>> blockTags = List.of();
 
     private Consumer<CustomBlockInteractEvent> onInteract;
     private Consumer<CustomBlockPlaceEvent> onPlace;
@@ -118,6 +125,34 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
         return this;
     }
 
+    @Contract(value = "_ -> this")
+    @Override
+    public @NotNull CustomBlockBuilder hardness(float hardness) {
+        this.hardness = hardness;
+        return this;
+    }
+
+    @Contract(value = "_ -> this")
+    @Override
+    public @NotNull CustomBlockBuilder requiredToolType(@Nullable Tag<Material> toolType) {
+        this.requiredToolType = toolType;
+        return this;
+    }
+
+    @Contract(value = "_ -> this")
+    @Override
+    public @NotNull CustomBlockBuilder minimumToolTier(@Nullable ToolTier tier) {
+        this.minimumToolTier = tier;
+        return this;
+    }
+
+    @Contract(value = "_ -> this")
+    @Override
+    public @NotNull CustomBlockBuilder blockTags(@NotNull List<Tag<Material>> tags) {
+        this.blockTags = List.copyOf(tags);
+        return this;
+    }
+
     @Override
     public @NonNull CustomBlockBuilder setOnBlockInteract(@NotNull Consumer<CustomBlockInteractEvent> event) {
         this.onInteract = event;
@@ -146,6 +181,6 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
     @Override
     public @NotNull ICustomBlock build() {
         if (parts.isEmpty()) throw new IllegalStateException("CustomBlock '" + id + "' has no parts");
-        return new CustomBlock(id, parts, rotatable, onInteract, onPlace, onBreak);
+        return new CustomBlock(id, parts, rotatable, hardness, requiredToolType, minimumToolTier, blockTags, onInteract, onPlace, onBreak);
     }
 }

@@ -27,6 +27,9 @@ import org.joml.Vector3f;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Stateless world-mutation and rotation helpers for the CustomBlock system, kept separate from
@@ -36,6 +39,21 @@ final class CustomBlockRuntime {
 
     /** Extra padding (in blocks) around a structure's part cells when scanning for its display entities. */
     private static final double DISPLAY_SCAN_PADDING = 1.5;
+
+    /**
+     * Thread-safe set of every currently-placed part's location, so {@link CustomBlockDigging}'s packet
+     * listener can synchronously tell "is this a CustomBlock part" from the Netty thread - packet
+     * cancellation has to happen before {@code onPacketReceive} returns, which is too early to hop to the
+     * main thread and back. {@link #resolve} can't be used there since it reads {@link CustomBlockData},
+     * which (like the rest of the Bukkit API) must stay on the main thread.
+     *
+     * <p>Populated in {@link #placeParts}, cleared in {@link #removeParts} - both main-thread-only.
+     * {@link #isKnownPart} itself is safe to call from any thread. Not backfilled from persisted
+     * {@link CustomBlockData} on world/chunk load, so a CustomBlock placed in a previous server session
+     * won't get packet-level cancellation until re-placed; the normal, {@link CustomBlockData}-backed
+     * {@link #resolve} path is unaffected and still works for it regardless.</p>
+     */
+    private static final Set<PartKey> KNOWN_PARTS = ConcurrentHashMap.newKeySet();
 
     private CustomBlockRuntime() {}
 
@@ -168,6 +186,8 @@ final class CustomBlockRuntime {
             data.set(CustomBlockKeys.rotation(), PersistentDataType.INTEGER, rotationSteps);
             data.set(CustomBlockKeys.partIndex(), PersistentDataType.INTEGER, i);
 
+            KNOWN_PARTS.add(new PartKey(target.getWorld().getUID(), target.getX(), target.getY(), target.getZ()));
+
             for (DisplayDefinition display : part.displays()) {
                 spawnDisplay(target, origin, customBlock.id(), display, part.transformation(), rotationSteps);
             }
@@ -188,10 +208,27 @@ final class CustomBlockRuntime {
             Block target = partBlock(origin, part, rotationSteps);
             target.setType(Material.AIR, false);
             new CustomBlockData(target, plugin).clear();
+            KNOWN_PARTS.remove(new PartKey(target.getWorld().getUID(), target.getX(), target.getY(), target.getZ()));
         }
 
         removeDisplays(customBlock, origin, rotationSteps);
     }
+
+    /**
+     * Thread-safe check for whether {@code (x, y, z)} in the world identified by {@code worldId} is a
+     * currently-placed CustomBlock part. Safe to call from any thread, unlike {@link #resolve}.
+     * @param worldId the world's unique id
+     * @param x block x
+     * @param y block y
+     * @param z block z
+     * @return {@code true} if a part is currently placed there
+     */
+    static boolean isKnownPart(@NotNull UUID worldId, int x, int y, int z) {
+        return KNOWN_PARTS.contains(new PartKey(worldId, x, y, z));
+    }
+
+    /** Composite key for {@link #KNOWN_PARTS} - a block position scoped to its world. */
+    private record PartKey(@NotNull UUID worldId, int x, int y, int z) {}
 
     /**
      * Spawns the display entity for {@code display} at {@code target}'s location - a

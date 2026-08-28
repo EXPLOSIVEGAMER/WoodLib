@@ -1,9 +1,12 @@
 package at.woodexplosive.woodlib;
 
 import at.woodexplosive.woodlib.api.block.CustomBlockRegistry;
+import at.woodexplosive.woodlib.block.CustomBlockDigging;
 import at.woodexplosive.woodlib.block.CustomBlockListener;
 import at.woodexplosive.woodlib.gui.gui.AbstractGui;
+import com.github.retrooper.packetevents.PacketEvents;
 import com.jeff_media.customblockdata.CustomBlockData;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -43,17 +46,29 @@ public final class WoodLib {
      * @param host the plugin that owns the library at runtime
      * @throws IllegalStateException if the library is already initialized
      */
+    @SuppressWarnings("UnstableApiUsage")
     public static void init(JavaPlugin host) {
         if (plugin != null) throw new IllegalStateException("WoodLib is already initialized");
         plugin = host;
         logger = LoggerFactory.getLogger(String.format("%s:%s", LIB_ID, host.getName()));
+
+        // PacketEvents' recommended pattern splits load() into onLoad() and init() into onEnable() (for
+        // early-connection channel injection). WoodLib only has one lifecycle hook to work with -
+        // whatever the host calls this from, typically its own onEnable() - so both phases happen here
+        // back to back. This is a documented, supported fallback, just not the ideal ordering.
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(host));
+        // bStats(false) exists but is deprecated by PacketEvents itself - opting out isn't currently
+        // possible without triggering that warning, so we leave its default (enabled) in place.
+        PacketEvents.getAPI().getSettings().checkForUpdates(false);
+        PacketEvents.getAPI().load();
+        PacketEvents.getAPI().init();
 
         Scheduler.start();
         rListeners();
     }
 
     /**
-     * Tears the library down and stops the {@link Scheduler}.
+     * Tears the library down, stops the {@link Scheduler} and terminates PacketEvents.
      * Call from the host's {@code onDisable}. Does nothing if the library was never initialized.
      */
     public static void disable() {
@@ -61,6 +76,7 @@ public final class WoodLib {
 
         Scheduler.stop();
         CustomBlockRegistry.clear();
+        PacketEvents.getAPI().terminate();
         plugin = null;
         logger = null;
     }
@@ -91,6 +107,8 @@ public final class WoodLib {
         PluginManager pm = Bukkit.getPluginManager();
         pm.registerEvents(new AbstractGui.GuiListener(), plugin());
         pm.registerEvents(new CustomBlockListener(), plugin());
+        pm.registerEvents(new CustomBlockDigging(), plugin());
+        CustomBlockDigging.registerPacketListener();
 
         // CustomBlock parts default to Material.BARRIER, which never produces a real BlockBreakEvent in
         // survival, so CustomBlockListener handles breaking itself and this auto-clear rarely fires for

@@ -85,7 +85,7 @@ public final class CustomBlockListener implements Listener {
     /**
      * Places the {@link ICustomBlock} linked to {@code itemInHand}, if all of its parts' target
      * positions are free, firing a cancellable {@link CustomBlockPlaceEvent} first.
-     * @param event the underlying interact event, cancelled once a linked item is recognized
+     * @param event the underlying interact event, canceled once a linked item is recognized
      * @param player the placing player
      * @param linkedId the CustomBlock id read off {@code itemInHand}
      * @param itemInHand the linked placer item in the player's main hand
@@ -122,8 +122,10 @@ public final class CustomBlockListener implements Listener {
     }
 
     /**
-     * Breaks the CustomBlock structure {@code clickedBlock} belongs to, firing a cancellable
-     * {@link CustomBlockBreakEvent} first, then drops the registered item unless the player is creative.
+     * Breaks the CustomBlock structure {@code clickedBlock} belongs to on a direct left-click, unless it
+     * needs timed mining ({@link ICustomBlock#hardness()} {@code > 0}) - that path is entirely driven by
+     * {@link CustomBlockDigging} off the raw digging packets instead, since Bukkit never surfaces a
+     * "player is still holding down the mouse" signal for an (in survival) unbreakable Barrier.
      * @param event the underlying interact event, always cancelled once a known part is clicked
      * @param player the breaking player
      * @param clickedBlock the specific part block that was left-clicked
@@ -142,9 +144,24 @@ public final class CustomBlockListener implements Listener {
             return;
         }
 
+        if (resolved.customBlock().hardness() > 0f) return; // CustomBlockDigging drives timed breaking
+
         GameMode gameMode = player.getGameMode();
         if (gameMode == GameMode.SPECTATOR || gameMode == GameMode.ADVENTURE) return;
 
+        performBreak(player, resolved, clickedBlock);
+    }
+
+    /**
+     * Fires a cancellable {@link CustomBlockBreakEvent}, removes the structure's parts on success, and
+     * drops loot unless the player's held tool didn't qualify as "correct" for {@code resolved}'s
+     * CustomBlock. Shared by the instant-break path ({@link #handleBreak}) and the timed-mining path
+     * ({@link CustomBlockDigging}), so both end up with identical break semantics.
+     * @param player the breaking player
+     * @param resolved the resolved CustomBlock structure
+     * @param clickedBlock the specific part block that triggered the break
+     */
+    static void performBreak(@NotNull Player player, @NotNull CustomBlockRuntime.ResolvedPart resolved, @NotNull Block clickedBlock) {
         CustomBlockBreakEvent breakEvent = new CustomBlockBreakEvent(player, resolved.customBlock(), resolved.originBlock(),
                 clickedBlock, resolved.partIndex(), resolved.rotationSteps());
 
@@ -153,7 +170,18 @@ public final class CustomBlockListener implements Listener {
 
         CustomBlockRuntime.removeParts(resolved.customBlock(), resolved.originBlock(), resolved.rotationSteps());
 
-        if (breakEvent.isDropping()) {
+        // Computed before damaging the held item: a tool that breaks (hits 0 durability) on this exact
+        // swing would otherwise leave the hand empty by the time this is checked, wrongly reading as "no
+        // tool" and suppressing drops it should have earned.
+        boolean correctTool = CustomBlockMining.isCorrectTool(resolved.customBlock(), player.getInventory().getItemInMainHand());
+
+        // Vanilla damages a damageable held item on every block break, correct tool or not - never in
+        // Creative. damageItemStack already applies Unbreaking's chance and handles the item breaking.
+        if (player.getGameMode() != GameMode.CREATIVE) {
+            player.damageItemStack(EquipmentSlot.HAND, 1);
+        }
+
+        if (breakEvent.isDropping() && correctTool) {
             dropLoot(resolved.customBlock().id(), player, clickedBlock);
         }
     }
@@ -166,7 +194,7 @@ public final class CustomBlockListener implements Listener {
      * @param player the breaking player (used as the loot table's killer context)
      * @param clickedBlock the specific part block that was broken, used as the drop location
      */
-    private void dropLoot(@NotNull NamespacedKey blockId, @NotNull Player player, @NotNull Block clickedBlock) {
+    private static void dropLoot(@NotNull NamespacedKey blockId, @NotNull Player player, @NotNull Block clickedBlock) {
         LootTable lootTable = CustomBlockRegistry.lootTable(blockId);
 
         if (lootTable != null) {

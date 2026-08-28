@@ -175,7 +175,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
      * @param event the underlying inventory close event
      * @return {@code true} to cancel the close
      */
-    protected boolean onClose(@NotNull InventoryCloseEvent event) {
+    protected boolean onClose(@NotNull GuiCloseEvent event) {
         return false;
     }
 
@@ -184,7 +184,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
      * @param event the underlying inventory open event
      * @return {@code true} to cancel the open
      */
-    protected boolean onOpen(@NotNull InventoryOpenEvent event) {
+    protected boolean onOpen(@NotNull GuiOpenEvent event) {
         return false;
     }
 
@@ -202,7 +202,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
      * @param event the underlying inventory drag event
      * @return {@code true} to cancel the drag
      */
-    protected boolean onDrag(@NotNull InventoryDragEvent event) {
+    protected boolean onDrag(@NotNull GuiDragEvent event) {
         return false;
     }
 

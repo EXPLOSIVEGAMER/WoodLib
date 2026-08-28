@@ -33,9 +33,14 @@ tasks.withType(GenerateModuleMetadata).configureEach {
 // packetevents/custom-block-data werden relociert (siehe root build.gradle shadowJar-Relocations)
 // direkt in die published Jar mitgeshaded -> Consumer brauchen weder codemc-repo
 // noch eigenes Shading dieser Libs mehr, POM bleibt frei von diesen Runtime-Dependencies.
-// (archiveClassifier bleibt Standard/"all" - der lokale Dateiname in build/libs ist irrelevant
-// für den veröffentlichten Maven-Namen, aber ein leerer Classifier würde mit core-<version>.jar
-// der normalen jar-Task kollidieren -> von :plugin:shadowJar als undeklarierte Task-Abhängigkeit erkannt.)
+// archiveBaseName (statt archiveClassifier) geändert, damit die Datei nicht mit core-<version>.jar
+// der normalen jar-Task kollidiert (sonst von :plugin:shadowJar als undeklarierte Task-Abhängigkeit
+// erkannt), aber trotzdem klassifikatorlos published wird - sonst hat die Publication kein
+// Standard-Artefakt und Maven/Gradle-Consumer lösen sie nicht automatisch auf (packaging=pom-Bug).
+shadowJar {
+    archiveBaseName.set('woodlib-core')
+    archiveClassifier.set('')
+}
 
 publishing {
     publications {

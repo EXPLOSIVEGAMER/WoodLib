@@ -26,8 +26,19 @@ import java.util.List;
  */
 public interface IPagedGui<T extends IPagedGui<T>> extends IGui<T> {
 
+    /**
+     * Opens the inventory for {@code player} on the given page.
+     * @param player the player
+     * @param page the page to open on
+     * @return the newly opened {@link InventoryView}
+     */
     @Nullable InventoryView open(@NotNull Player player, int page);
 
+    /**
+     * Opens the inventory for {@code player} on its {@link #getPage() current page}.
+     * @param player the player
+     * @return the newly opened {@link InventoryView}
+     */
     @Override
     @Nullable InventoryView open(@NotNull Player player);
 

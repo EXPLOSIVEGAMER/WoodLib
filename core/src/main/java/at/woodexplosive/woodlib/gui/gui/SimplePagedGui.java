@@ -71,6 +71,11 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         this.pageSlots = pageSlots;
     }
 
+    /**
+     * Template-method constructor for subclasses: builds the inventory from the {@link AbstractGui}
+     * hooks plus {@link #pageSlots()} and {@link #onPageChange(GuiPageChangeEvent)}, then runs
+     * {@link #init()}.
+     */
     protected SimplePagedGui() {
         super();
         this.pageSlots = pageSlots();
@@ -79,10 +84,21 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
         this.init();
     }
 
+    /**
+     * The slot indices that page elements are laid out into. Overridden by no-arg-constructor
+     * subclasses; defaults to no page slots.
+     * @return the page slots
+     */
     protected @NotNull List<Integer> pageSlots() {
         return List.of();
     }
 
+    /**
+     * Hook run on {@link GuiPageChangeEvent} (wired as this GUI's page-change callback). No-op by
+     * default.
+     * @param event the page-change event
+     * @return {@code true} to cancel the page change
+     */
     protected boolean onPageChange(@NotNull GuiPageChangeEvent event) {
         return false;
     }
@@ -93,7 +109,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
      * @param title  the inventory title
      * @param size   the inventory size (multiple of 9)
      * @param parent the parent Gui can be null if there's none
-     * @return a new {@link SimpleTabbedGui.Builder}
+     * @return a new {@link Builder}
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static Builder builder(Component title, int size, @Nullable IGui<?> parent) {
@@ -106,7 +122,7 @@ public class SimplePagedGui extends AbstractGui<SimplePagedGui> implements IPage
      * @param title  the inventory title
      * @param type   the inventory type (its default size is used)
      * @param parent the parent Gui can be null if there's none
-     * @return a new {@link SimpleTabbedGui.Builder}
+     * @return a new {@link Builder}
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static Builder builder(Component title, @NotNull InventoryType type, @Nullable IGui<?> parent) {

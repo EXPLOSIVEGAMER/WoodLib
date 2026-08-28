@@ -36,5 +36,9 @@ public interface IGuiListener extends Listener {
      */
     void onInventoryDrag(@NotNull InventoryDragEvent event);
 
+    /**
+     * Handles any interaction with an inventory.
+     * @param event the {@link InventoryInteractEvent}
+     */
     void onInventoryInteract(@NotNull InventoryInteractEvent event);
 }

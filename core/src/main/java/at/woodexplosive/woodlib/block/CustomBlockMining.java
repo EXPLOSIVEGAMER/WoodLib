@@ -38,6 +38,12 @@ final class CustomBlockMining {
         return held != null && held.level() >= minimum.level();
     }
 
+    /**
+     * @param customBlock the CustomBlock being mined
+     * @param tool the item in the mining player's main hand
+     * @return {@code true} if {@code tool} matches {@link ICustomBlock#requiredToolType()}, ignoring
+     *         {@link ICustomBlock#minimumToolTier()}
+     */
     static boolean isCorrectToolType(@NotNull ICustomBlock customBlock, @NotNull ItemStack tool) {
         Tag<Material> requiredType = customBlock.requiredToolType();
         if (requiredType == null) return true;

@@ -36,6 +36,12 @@ public interface IGuiBuilder<T extends IGuiBuilder<T, G>, G extends IGui<G>> {
     @Contract(value = "_ -> this")
     T setOnOpen(final @NotNull IGui.Callback<GuiOpenEvent> onOpen);
 
+    /**
+     * Sets the callback run when the GUI's inventory is interacted with.
+     * @see GuiInteractEvent
+     * @param onInteract the interact callback
+     * @return this builder for chaining
+     */
     @Contract(value = "_ -> this")
     T setOnInteract(final @NotNull IGui.Callback<GuiInteractEvent> onInteract);
 

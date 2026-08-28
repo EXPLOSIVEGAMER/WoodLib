@@ -47,8 +47,22 @@ public interface ICustomBlock {
     @Contract(pure = true)
     @NotNull List<CustomBlockPart> parts();
 
+    /**
+     * Called when a player interacts with a placed instance of this CustomBlock. No-op by default.
+     * @param event the interact event
+     */
     default void onInteract(CustomBlockInteractEvent event) {}
+
+    /**
+     * Called when a placed instance of this CustomBlock is broken. No-op by default.
+     * @param event the break event
+     */
     default void onBreak(CustomBlockBreakEvent event) {}
+
+    /**
+     * Called when an instance of this CustomBlock is placed. No-op by default.
+     * @param event the place event
+     */
     default void onPlace(CustomBlockPlaceEvent event) {}
 
     /**
@@ -145,6 +159,9 @@ public interface ICustomBlock {
         return NamespacedKey.fromString(sID);
     }
 
+    /**
+     * @return a new identity {@link Transformation} (no translation, rotation or scale change)
+     */
     @Contract(value = "-> new", pure = true)
     static @NotNull Transformation emptyTransformation() {
         return new Transformation(new Vector3f(), new Quaternionf(), new Vector3f(), new Quaternionf());

@@ -15,6 +15,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Fluent builder for assembling an {@link ICustomBlock} from one or more {@link CustomBlockPart}s plus
+ * its mining and interaction behavior.
+ * @param <T> the concrete builder type, for covariant method chaining
+ */
 public interface ICustomBlockBuilder<T extends ICustomBlockBuilder<T>> {
 
     /**
@@ -71,12 +76,27 @@ public interface ICustomBlockBuilder<T extends ICustomBlockBuilder<T>> {
     @Contract(value = "_ -> this")
     @NotNull T blockTags(@NotNull List<Tag<Material>> tags);
 
+    /**
+     * Sets the callback invoked on {@link ICustomBlock#onInteract(CustomBlockInteractEvent)}.
+     * @param event the interact callback
+     * @return this builder for chaining
+     */
     @Contract(value = "_ -> this")
     @NotNull T setOnBlockInteract(@NotNull Consumer<CustomBlockInteractEvent> event);
 
+    /**
+     * Sets the callback invoked on {@link ICustomBlock#onBreak(CustomBlockBreakEvent)}.
+     * @param event the break callback
+     * @return this builder for chaining
+     */
     @Contract(value = "_ -> this")
     @NotNull T setOnBlockBreakEvent(@NotNull Consumer<CustomBlockBreakEvent> event);
 
+    /**
+     * Sets the callback invoked on {@link ICustomBlock#onPlace(CustomBlockPlaceEvent)}.
+     * @param event the place callback
+     * @return this builder for chaining
+     */
     @Contract(value = "_ -> this")
     @NotNull T setOnBlockPlaceEvent(@NotNull Consumer<CustomBlockPlaceEvent> event);
 

@@ -32,6 +32,7 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
      * @param type               the inventory type, or {@code null} to create a plain chest inventory of {@code size}
      * @param onClose            the close callback
      * @param onOpen             the open callback
+     * @param onInteract         the interact callback
      * @param onDrag             the drag callback
      * @param onTick             the per-tick callback
      * @param onClickGlobal      the global click callback
@@ -44,6 +45,11 @@ public class SimpleGui extends AbstractGui<SimpleGui> {
         super(title, size, type, onClose, onOpen, onInteract, onDrag, onTick, onClickGlobal, playerManipulation, parent);
     }
 
+    /**
+     * Template-method constructor for subclasses: builds the inventory from the overridable hooks
+     * inherited from {@link AbstractGui} (e.g. {@link #title()}, {@link #size()}), then runs
+     * {@link #init()}.
+     */
     protected SimpleGui() {
         super();
 

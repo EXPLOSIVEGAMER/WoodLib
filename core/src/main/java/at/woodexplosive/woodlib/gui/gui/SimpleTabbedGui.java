@@ -81,6 +81,11 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         this.contentSlots = contentSlots;
     }
 
+    /**
+     * Template-method constructor for subclasses: builds the inventory from the {@link AbstractGui}
+     * hooks plus {@link #contentSlots()}, {@link #tabSlots()} and
+     * {@link #onTabChange(GuiTabChangeEvent)}, then runs {@link #init()}.
+     */
     protected SimpleTabbedGui() {
         super();
         this.contentSlots = contentSlots();
@@ -90,14 +95,30 @@ public class SimpleTabbedGui extends AbstractGui<SimpleTabbedGui> implements ITa
         this.init();
     }
 
+    /**
+     * The slot indices the active tab's content is rendered into. Overridden by no-arg-constructor
+     * subclasses; defaults to no content slots.
+     * @return the content slots
+     */
     protected @NotNull List<Integer> contentSlots() {
         return List.of();
     }
 
+    /**
+     * The slot indices the tab buttons are rendered into. Overridden by no-arg-constructor
+     * subclasses; defaults to no tab slots.
+     * @return the tab slots
+     */
     protected @NotNull List<Integer> tabSlots() {
         return List.of();
     }
 
+    /**
+     * Hook run on {@link GuiTabChangeEvent} (wired as this GUI's tab-change callback). No-op by
+     * default.
+     * @param event the tab-change event
+     * @return {@code true} to cancel the tab change
+     */
     protected boolean onTabChange(@NotNull GuiTabChangeEvent event) {
         return false;
     }

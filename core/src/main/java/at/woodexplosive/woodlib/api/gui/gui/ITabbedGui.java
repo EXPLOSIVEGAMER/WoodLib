@@ -26,9 +26,19 @@ import java.util.List;
  */
 public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
 
+    /**
+     * Opens the inventory for {@code player} with the given tab active.
+     * @param player the player
+     * @param tab the tab to activate, or {@code null} to keep the current/default tab
+     * @return the newly opened {@link InventoryView}
+     */
     @Nullable InventoryView open(@NotNull Player player, @Nullable ITab tab);
 
-
+    /**
+     * Opens the inventory for {@code player} with its {@link #getTab() current tab} active.
+     * @param player the player
+     * @return the newly opened {@link InventoryView}
+     */
     @Override
     @Nullable InventoryView open(@NotNull Player player);
 
@@ -92,6 +102,11 @@ public interface ITabbedGui<T extends ITabbedGui<T>> extends IGui<T> {
     @Contract(pure = true)
     @NotNull List<Integer> getContentSlots();
 
+    /**
+     * Returns first slot index that is empty and neither a tab nor content slot.
+     * @return first empty slot index, otherwise -1
+     */
+    @Contract(pure = true)
     default int firstTrueEmpty() {
         for (int i = 0; i < this.getInventory().getSize(); i++) {
             if (this.getContentSlots().contains(i) || this.getTabSlots().contains(i)) continue;

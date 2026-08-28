@@ -113,10 +113,17 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
     int closeAll();
 
     /**
-     * Closes inventory with given exitFlag
+     * Closes the inventory for all viewers with the given raw exit flag.
+     * @param exitFlag a raw {@link GuiExitFlag} byte (see {@link GuiExitFlag#combineFlags(GuiExitFlag...)})
+     * @return the number of viewers the inventory was closed for
      */
     int close(byte exitFlag);
 
+    /**
+     * Closes the inventory for all viewers with the given exit flags.
+     * @param exitFlags the {@link GuiExitFlag}s to close with
+     * @return the number of viewers the inventory was closed for
+     */
     default int close(GuiExitFlag... exitFlags) {
         return this.close(GuiExitFlag.combineFlags(exitFlags));
     }
@@ -133,10 +140,18 @@ public interface IGui<T extends IGui<T>> extends InventoryHolder {
      */
     void setExitFlag(byte exitFlag);
 
+    /**
+     * Sets the Gui's exit flag from individual {@link GuiExitFlag}s.
+     * @param flags the exit flags to set
+     */
     default void setExitFlags(GuiExitFlag... flags) {
         this.setExitFlag(GuiExitFlag.combineFlags(flags));
     }
 
+    /**
+     * ORs the given raw flag onto the GUI's current exit flag, leaving any already-set bits untouched.
+     * @param flag the raw {@link GuiExitFlag} byte to add
+     */
     default void addExitFlags(byte flag) {
         byte newFlag = (byte) (this.getExitFlag() | flag);
         this.setExitFlag(newFlag);

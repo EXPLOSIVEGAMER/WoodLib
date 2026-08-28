@@ -101,6 +101,11 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         this.pageSlots = pageSlots;
     }
 
+    /**
+     * Template-method constructor for subclasses: builds the inventory from the {@link AbstractGui}
+     * hooks plus {@link #tabSlots()}, {@link #pageSlots()}, {@link #onPageChange(GuiPageChangeEvent)}
+     * and {@link #onTabChange(GuiTabChangeEvent)}, then runs {@link #init()}.
+     */
     protected SimpleTabbedPagedGui() {
         super();
         this.tabSlots = tabSlots();
@@ -111,18 +116,40 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         this.init();
     }
 
+    /**
+     * The slot indices the tab buttons are rendered into. Overridden by no-arg-constructor
+     * subclasses; defaults to no tab slots.
+     * @return the tab slots
+     */
     protected @NotNull List<Integer> tabSlots() {
         return List.of();
     }
 
+    /**
+     * The slot indices the active tab's page content is rendered into. Overridden by
+     * no-arg-constructor subclasses; defaults to no page slots.
+     * @return the page slots
+     */
     protected @NotNull List<Integer> pageSlots() {
         return List.of();
     }
 
+    /**
+     * Hook run on {@link GuiPageChangeEvent} (wired as this GUI's page-change callback). No-op by
+     * default.
+     * @param event the page-change event
+     * @return {@code true} to cancel the page change
+     */
     protected boolean onPageChange(@NotNull GuiPageChangeEvent event) {
         return false;
     }
 
+    /**
+     * Hook run on {@link GuiTabChangeEvent} (wired as this GUI's tab-change callback). No-op by
+     * default.
+     * @param event the tab-change event
+     * @return {@code true} to cancel the tab change
+     */
     protected boolean onTabChange(@NotNull GuiTabChangeEvent event) {
         return false;
     }
@@ -133,7 +160,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
      * @param title  the inventory title
      * @param size   the inventory size (multiple of 9)
      * @param parent the parent Gui can be null if there's none
-     * @return a new {@link SimpleTabbedGui.Builder}
+     * @return a new {@link Builder}
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static Builder builder(Component title, int size, @Nullable IGui<?> parent) {
@@ -146,7 +173,7 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
      * @param title  the inventory title
      * @param type   the inventory type (its default size is used)
      * @param parent the parent Gui can be null if there's none
-     * @return a new {@link SimpleTabbedGui.Builder}
+     * @return a new {@link Builder}
      */
     @Contract(value = "_, _, _ -> new", pure = true)
     public static Builder builder(Component title, @NotNull InventoryType type, @Nullable IGui<?> parent) {
@@ -294,6 +321,12 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
 
     // Paged Tabbed
 
+    /**
+     * Disambiguates the {@code firstTrueEmpty()} default inherited from both {@link ITabbedGui} and
+     * {@link IPagedGui} in favor of {@link ITabbedGui}'s (tab + content slots), since content and page
+     * slots are the same here.
+     * @return first empty slot index outside the tab/content slots, otherwise -1
+     */
     @Override
     public int firstTrueEmpty() {
         return ITabbedGui.super.firstTrueEmpty();
@@ -310,6 +343,13 @@ public class SimpleTabbedPagedGui extends AbstractGui<SimpleTabbedPagedGui>
         return this;
     }
 
+    /**
+     * Opens the inventory for {@code player} with the given tab active on the given page.
+     * @param player the player
+     * @param tab the tab to activate, or {@code null} to keep the current tab
+     * @param page the page to open the tab on
+     * @return the newly opened {@link InventoryView}
+     */
     public @Nullable InventoryView open(@NonNull Player player, @Nullable ITab tab, int page) {
         this.activeTab = tab;
         this.page = page;

@@ -107,6 +107,12 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         this.playerManipulation = playerManipulation;
     }
 
+    /**
+     * No-arg constructor for template-method subclasses: the inventory is built from the overridable
+     * hooks ({@link #title()}, {@link #type()}, {@link #size()}, {@link #parent()},
+     * {@link #playerManipulation()}) instead of constructor arguments, and event callbacks are wired to
+     * the corresponding {@code onXxx} hook methods.
+     */
     protected AbstractGui() {
         this.parent = parent();
         InventoryType type = type();
@@ -124,48 +130,107 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         this.playerManipulation = playerManipulation();
     }
 
+    /** Hook run after construction for subclasses that need to populate slots; no-op by default. */
     protected void init() {}
 
+    /**
+     * The inventory title. Overridden by no-arg-constructor subclasses; defaults to the title passed
+     * to the full constructor, or an empty component if none was set.
+     * @return the inventory title
+     */
     protected @NotNull Component title() {
         return this.title == null ? Component.empty() : this.title;
     }
 
+    /**
+     * The GUI to reopen when this one closes without {@code CLOSE_PARENTS} set. Overridden by
+     * no-arg-constructor subclasses; defaults to the parent passed to the full constructor.
+     * @return the parent GUI, or {@code null} for none
+     */
     protected @Nullable IGui<?> parent() {
         return this.parent;
     }
 
+    /**
+     * The inventory type to create. Overridden by no-arg-constructor subclasses; defaults to the
+     * backing inventory's own type, or {@code null} before it exists.
+     * @return the inventory type, or {@code null} to create a plain chest inventory of {@link #size()}
+     */
     protected @Nullable InventoryType type() {
         return inventory == null ? null : this.inventory.getType();
     }
 
+    /**
+     * The inventory size (multiple of 9), used only when {@link #type()} is {@code null}. Overridden
+     * by no-arg-constructor subclasses; defaults to the backing inventory's own size, or {@code 0}
+     * before it exists.
+     * @return the inventory size
+     */
     protected int size() {
         return inventory == null ? 0 : this.inventory.getSize();
     }
 
+    /**
+     * Hook run on {@link GuiCloseEvent} (wired as this GUI's {@link Callback}). No-op by default.
+     * @param event the underlying inventory close event
+     * @return {@code true} to cancel the close
+     */
     protected boolean onClose(@NotNull InventoryCloseEvent event) {
         return false;
     }
 
+    /**
+     * Hook run on {@link GuiOpenEvent} (wired as this GUI's {@link Callback}). No-op by default.
+     * @param event the underlying inventory open event
+     * @return {@code true} to cancel the open
+     */
     protected boolean onOpen(@NotNull InventoryOpenEvent event) {
         return false;
     }
 
+    /**
+     * Hook run on {@link GuiInteractEvent} (wired as this GUI's {@link Callback}). No-op by default.
+     * @param event the interact event
+     * @return {@code true} to cancel the interaction
+     */
     protected boolean onInteract(@NotNull GuiInteractEvent event) {
         return false;
     }
 
+    /**
+     * Hook run on {@link GuiDragEvent} (wired as this GUI's {@link Callback}). No-op by default.
+     * @param event the underlying inventory drag event
+     * @return {@code true} to cancel the drag
+     */
     protected boolean onDrag(@NotNull InventoryDragEvent event) {
         return false;
     }
 
+    /**
+     * Hook run every server tick while the GUI is open (wired as this GUI's {@link Callback}). No-op
+     * by default.
+     * @param event the tick event
+     * @return {@code true} to cancel the event
+     */
     protected boolean onTick(@NotNull GuiTickEvent event) {
         return false;
     }
 
+    /**
+     * Global click hook run for every click in the GUI, before per-slot callbacks (wired as this GUI's
+     * global click callback). No-op by default.
+     * @param event the click event
+     * @return {@code true} to cancel the click
+     */
     protected boolean onClickGlobal(@NotNull GuiClickEvent event) {
         return false;
     }
 
+    /**
+     * Whether the player may freely move items in the inventory. Overridden by no-arg-constructor
+     * subclasses; defaults to the value passed to the full constructor.
+     * @return {@code true} to allow player item manipulation
+     */
     protected boolean playerManipulation() {
         return this.playerManipulation;
     }
@@ -321,6 +386,7 @@ public abstract class AbstractGui<T extends IGui<T>> implements IGui<T> {
         this.tickTask = null;
     }
 
+    /** Fires a {@link GuiTickEvent} and runs {@link #onTick}; invoked once per server tick while ticking. */
     protected void tick() {
         GuiTickEvent event = new GuiTickEvent(self());
         event.callEvent();

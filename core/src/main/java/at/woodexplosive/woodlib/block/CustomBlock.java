@@ -100,6 +100,10 @@ public class CustomBlock implements ICustomBlock {
         onPlace.accept(event);
     }
 
+    /**
+     * @param block the world block to check
+     * @return {@code true} if {@code block} is a part of a placed CustomBlock structure
+     */
     public static boolean isCustomBlock(Block block) {
         return CustomBlockRuntime.resolve(block, WoodLib.plugin()) != null;
     }

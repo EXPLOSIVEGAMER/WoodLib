@@ -12,6 +12,7 @@ import at.woodexplosive.woodlib.block.CustomBlock;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.Contract;
@@ -85,6 +86,22 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
     public @NotNull CustomBlockBuilder part(int x, int y, int z, float sx, float sy, float sz, @NotNull Material barrierMaterial, @NotNull List<DisplayDefinition> displays) {
         Transformation transformation = new Transformation(new Vector3f(0, 0, 0), new Quaternionf(), new Vector3f(sx, sy, sz), new Quaternionf());
         return part(new CustomBlockPart(new BlockVector(x, y, z), transformation, barrierMaterial, displays));
+    }
+
+    /**
+     * Adds a part at the given offset from the structure's origin, with an explicit collision block
+     * state (e.g. a stair with a specific facing).
+     * @param x offset x
+     * @param y offset y
+     * @param z offset z
+     * @param barrierData the collision block data for this part
+     * @param displays the {@link DisplayDefinition}s rendered at this part
+     * @return this builder for chaining
+     */
+    @Contract(value = "_, _, _, _, _, _, _, _ -> this")
+    public @NotNull CustomBlockBuilder part(int x, int y, int z, float sx, float sy, float sz, @NotNull BlockData barrierData, @NotNull List<DisplayDefinition> displays) {
+        Transformation transformation = new Transformation(new Vector3f(0, 0, 0), new Quaternionf(), new Vector3f(sx, sy, sz), new Quaternionf());
+        return part(new CustomBlockPart(new BlockVector(x, y, z), transformation, barrierData, displays));
     }
 
     /**

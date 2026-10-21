@@ -10,6 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.structure.StructureRotation;
 import org.bukkit.entity.BlockDisplay;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Entity;
@@ -128,6 +130,24 @@ final class CustomBlockRuntime {
     }
 
     /**
+     * Rotates a part's collision {@link BlockData} (e.g. a stair's facing) by {@code steps} 90°
+     * increments, clockwise viewed from above - the same direction {@link #rotateOffset} turns part
+     * positions, so the block state stays aligned with where the part gets placed.
+     * @param data the block data to rotate in place
+     * @param steps the rotation, in 90° steps
+     * @return {@code data}, for chaining
+     */
+    static @NotNull BlockData rotateBlockData(@NotNull BlockData data, int steps) {
+        switch (normalizeSteps(steps)) {
+            case 1 -> data.rotate(StructureRotation.CLOCKWISE_90);
+            case 2 -> data.rotate(StructureRotation.CLOCKWISE_180);
+            case 3 -> data.rotate(StructureRotation.COUNTERCLOCKWISE_90);
+            default -> { }
+        }
+        return data;
+    }
+
+    /**
      * @param steps a rotation in 90° steps, possibly negative or {@code >= 4}
      * @return the equivalent rotation normalized to {@code 0-3}
      */
@@ -178,7 +198,7 @@ final class CustomBlockRuntime {
         for (int i = 0; i < parts.size(); i++) {
             CustomBlockPart part = parts.get(i);
             Block target = partBlock(origin, part, rotationSteps);
-            target.setType(part.barrierMaterial(), false);
+            target.setBlockData(rotateBlockData(part.barrierData(), rotationSteps), false);
 
             CustomBlockData data = new CustomBlockData(target, plugin);
             data.set(ICustomBlock.idKey(), PersistentDataType.STRING, customBlock.id().asString());

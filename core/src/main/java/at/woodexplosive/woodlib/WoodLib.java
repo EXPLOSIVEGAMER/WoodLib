@@ -9,7 +9,9 @@ import at.woodexplosive.woodlib.impl.block.CustomBlockEntityManager;
 import at.woodexplosive.woodlib.impl.block.CustomBlockListener;
 import at.woodexplosive.woodlib.impl.block.CustomBlockPlacementPreview;
 import at.woodexplosive.woodlib.impl.gui.gui.AbstractGui;
+import at.woodexplosive.woodlib.impl.command.DebugCommand;
 import at.woodexplosive.woodlib.impl.uninode.NodeSpaceListener;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.jeff_media.customblockdata.CustomBlockData;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -66,6 +68,7 @@ public final class WoodLib {
 
         Scheduler.start();
         rListeners();
+        rCommands();
     }
 
     /**
@@ -104,6 +107,13 @@ public final class WoodLib {
     public static Logger logger() {
         if (logger == null) throw new IllegalStateException("WoodLib.init(plugin) was not called");
         return logger;
+    }
+
+    /** Registers the library's commands under the host plugin; works without a {@code plugin.yml} entry. */
+    @SuppressWarnings("UnstableApiUsage")
+    private static void rCommands() {
+        plugin().getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
+                event.registrar().register("woodlib", "WoodLib debug command", new DebugCommand()));
     }
 
     private static void rListeners() {

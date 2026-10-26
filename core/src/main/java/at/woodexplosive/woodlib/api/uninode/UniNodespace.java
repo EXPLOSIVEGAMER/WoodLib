@@ -133,6 +133,27 @@ public class UniNodespace {
 
     /** Ticks until the next cleanup of expired nodes and empty networks. */
     private static int reapTimer = 0;
+    /** Whether endpoints should show {@link INetworkProvider#spawnDebugParticles debug particles}. */
+    private static boolean particleDebug = false;
+
+    /**
+     * Turns network debug particles on or off (HBM's {@code particleDebug}). Endpoints check
+     * {@link #isParticleDebug()} in their {@code trySubscribe} and call
+     * {@link INetworkProvider#spawnDebugParticles}. Also toggleable in-game via {@code /woodlib netdebug}.
+     *
+     * @param enabled {@code true} to show debug particles
+     */
+    public static void setParticleDebug(boolean enabled) {
+        particleDebug = enabled;
+    }
+
+    /**
+     * @return {@code true} if network debug particles are on
+     */
+    @Contract(pure = true)
+    public static boolean isParticleDebug() {
+        return particleDebug;
+    }
 
     /**
      * Runs one nodespace tick. Called by WoodLib at the start of every server tick; do not call it
@@ -299,6 +320,7 @@ public class UniNodespace {
         activeNodeNets.forEach(net -> net.valid = false);
         activeNodeNets.clear();
         reapTimer = 0;
+        particleDebug = false;
     }
 
     /** The nodes of a single world, keyed by position and network type. */

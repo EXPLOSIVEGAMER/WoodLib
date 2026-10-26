@@ -158,6 +158,18 @@ public abstract class NodeNet<R, P, L extends GenNode> {
     }
 
     /**
+     * @return a read-only view of every receiver in this network
+     */
+    @Contract(pure = true)
+    public @NotNull @UnmodifiableView Map<R, Long> getReceivers() { return Collections.unmodifiableMap(receiverEntries); }
+
+    /**
+     * @return a read-only view of every provider in this network
+     */
+    @Contract(pure = true)
+    public @NotNull @UnmodifiableView Map<P, Long> getProviders() { return Collections.unmodifiableMap(providerEntries); }
+
+    /**
      * Marks this network as dead and unregisters it from the {@code UniNodespace}. Does not touch its
      * nodes; use {@link #destroy()} to fully tear the network down.
      */

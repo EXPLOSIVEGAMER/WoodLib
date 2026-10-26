@@ -174,9 +174,9 @@ public class GenNode<N extends NodeNet<?, ?, ?>> {
     }
 
     /**
-     * @return the node's network
+     * @return the node's network, {@code null} if no net exists
      */
-    public @Nullable N getNet() {
+    public N getNet() {
         return net;
     }
 }

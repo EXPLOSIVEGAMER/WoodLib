@@ -35,7 +35,7 @@ Also featureing usefull Utilities for creating plugins.
 Lib for CustomBlocks with no limit
 Including CustomBlockEntities for advanced data storage
 
-### Uninode
+### Uninode (Universal Node Network)
 Lib for creating networks (power, fluid, usw.)
 
 ##Utilities:

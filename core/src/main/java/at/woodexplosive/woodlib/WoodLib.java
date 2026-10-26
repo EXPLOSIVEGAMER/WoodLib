@@ -110,7 +110,6 @@ public final class WoodLib {
     }
 
     /** Registers the library's commands under the host plugin; works without a {@code plugin.yml} entry. */
-    @SuppressWarnings("UnstableApiUsage")
     private static void rCommands() {
         plugin().getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event ->
                 event.registrar().register("woodlib", "WoodLib debug command", new DebugCommand()));

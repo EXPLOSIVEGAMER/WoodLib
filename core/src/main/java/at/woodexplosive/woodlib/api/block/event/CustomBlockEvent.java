@@ -1,5 +1,7 @@
 package at.woodexplosive.woodlib.api.block.event;
 
+import at.woodexplosive.woodlib.api.block.CustomBlockEntities;
+import at.woodexplosive.woodlib.api.block.CustomBlockEntity;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
 import at.woodexplosive.woodlib.api.block.MultiblockInstance;
 import org.bukkit.World;
@@ -8,6 +10,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Base class for all Bukkit events fired by WoodLib's CustomBlock system. Carries the player who
@@ -67,5 +70,14 @@ public abstract class CustomBlockEvent extends Event {
      */
     public @NotNull World getWorld() {
         return instance.core().getWorld();
+    }
+
+    /**
+     * The structure's loaded {@link CustomBlockEntity}. Always {@code null} in a
+     * {@link CustomBlockPlaceEvent}: the entity is only created once the structure was placed.
+     * @return the entity, or {@code null} if there is none
+     */
+    public @Nullable CustomBlockEntity getEntity() {
+        return CustomBlockEntities.get(instance);
     }
 }

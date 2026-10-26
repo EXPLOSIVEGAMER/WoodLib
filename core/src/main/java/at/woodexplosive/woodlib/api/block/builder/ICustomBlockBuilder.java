@@ -1,10 +1,12 @@
 package at.woodexplosive.woodlib.api.block.builder;
 
+import at.woodexplosive.woodlib.api.block.CustomBlockEntity;
 import at.woodexplosive.woodlib.api.block.Dimensions;
 import at.woodexplosive.woodlib.api.block.DisplayDefinition;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
 import at.woodexplosive.woodlib.api.block.LocalDirection;
 import at.woodexplosive.woodlib.api.block.LocalPos;
+import at.woodexplosive.woodlib.api.block.MultiblockInstance;
 import at.woodexplosive.woodlib.api.block.ToolTier;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
@@ -18,6 +20,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Fluent builder for assembling an HBM-style multiblock {@link ICustomBlock}: its shape (boxes around
@@ -169,6 +172,15 @@ public interface ICustomBlockBuilder<T extends ICustomBlockBuilder<T>> {
      */
     @Contract(value = "_ -> this")
     @NotNull T setOnBlockPlaceEvent(@NotNull Consumer<CustomBlockPlaceEvent> event);
+
+    /**
+     * Sets the factory for the {@link CustomBlockEntity} of every placed instance
+     * (see {@link ICustomBlock#createEntity(MultiblockInstance)}).
+     * @param factory creates the entity for a placed structure
+     * @return this builder for chaining
+     */
+    @Contract(value = "_ -> this")
+    @NotNull T entity(@NotNull Function<MultiblockInstance, ? extends CustomBlockEntity> factory);
 
     /**
      * Builds the configured {@link ICustomBlock}. Does not register it - use

@@ -4,6 +4,8 @@ import at.woodexplosive.woodlib.api.block.CustomBlockRegistry;
 import at.woodexplosive.woodlib.api.uninode.UniNodespace;
 import at.woodexplosive.woodlib.impl.Scheduler;
 import at.woodexplosive.woodlib.impl.block.CustomBlockDigging;
+import at.woodexplosive.woodlib.impl.block.CustomBlockEntityListener;
+import at.woodexplosive.woodlib.impl.block.CustomBlockEntityManager;
 import at.woodexplosive.woodlib.impl.block.CustomBlockListener;
 import at.woodexplosive.woodlib.impl.block.CustomBlockPlacementPreview;
 import at.woodexplosive.woodlib.impl.gui.gui.AbstractGui;
@@ -74,6 +76,7 @@ public final class WoodLib {
         if (plugin == null) return;
 
         Scheduler.stop();
+        CustomBlockEntityManager.unloadAll();
         CustomBlockRegistry.clear();
         PacketEvents.getAPI().terminate();
         UniNodespace.clearNodes();
@@ -113,6 +116,8 @@ public final class WoodLib {
         pm.registerEvents(new CustomBlockDigging(), plugin());
         CustomBlockDigging.registerPacketListener();
         CustomBlockPlacementPreview.start();
+        pm.registerEvents(new CustomBlockEntityListener(), plugin());
+        CustomBlockEntityManager.start();
         CustomBlockData.registerListener(plugin());
     }
 }

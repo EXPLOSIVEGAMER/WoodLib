@@ -1,9 +1,11 @@
 package at.woodexplosive.woodlib.impl.block;
 
 import at.woodexplosive.woodlib.WoodLib;
+import at.woodexplosive.woodlib.api.block.CustomBlockEntity;
 import at.woodexplosive.woodlib.api.block.DisplayDefinition;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
 import at.woodexplosive.woodlib.api.block.LocalPos;
+import at.woodexplosive.woodlib.api.block.MultiblockInstance;
 import at.woodexplosive.woodlib.api.block.MultiblockShape;
 import at.woodexplosive.woodlib.api.block.ToolTier;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
@@ -22,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Default {@link ICustomBlock} implementation. Built via {@link CustomBlockBuilder}.
@@ -44,6 +47,7 @@ public class CustomBlock implements ICustomBlock {
     protected final @NotNull Consumer<CustomBlockInteractEvent> onInteract;
     protected final @NotNull Consumer<CustomBlockPlaceEvent> onPlace;
     protected final @NotNull Consumer<CustomBlockBreakEvent> onBreak;
+    protected final @NotNull Function<MultiblockInstance, ? extends CustomBlockEntity> entityFactory;
 
     /**
      * @param offset the placement offset, or {@code null} for the {@link ICustomBlock#offset() default}
@@ -55,7 +59,8 @@ public class CustomBlock implements ICustomBlock {
                        @NotNull List<Tag<Material>> blockTags,
                        @NotNull Consumer<CustomBlockInteractEvent> onInteract,
                        @NotNull Consumer<CustomBlockPlaceEvent> onPlace,
-                       @NotNull Consumer<CustomBlockBreakEvent> onBreak) {
+                       @NotNull Consumer<CustomBlockBreakEvent> onBreak,
+                       @NotNull Function<MultiblockInstance, ? extends CustomBlockEntity> entityFactory) {
         this.id = id;
         this.shape = shape;
         this.displays = List.copyOf(displays);
@@ -71,6 +76,7 @@ public class CustomBlock implements ICustomBlock {
         this.onInteract = onInteract;
         this.onPlace = onPlace;
         this.onBreak = onBreak;
+        this.entityFactory = entityFactory;
     }
 
     @Override
@@ -126,6 +132,11 @@ public class CustomBlock implements ICustomBlock {
     @Override
     public @NotNull List<Tag<Material>> blockTags() {
         return blockTags;
+    }
+
+    @Override
+    public @Nullable CustomBlockEntity createEntity(@NotNull MultiblockInstance instance) {
+        return entityFactory.apply(instance);
     }
 
     @Override

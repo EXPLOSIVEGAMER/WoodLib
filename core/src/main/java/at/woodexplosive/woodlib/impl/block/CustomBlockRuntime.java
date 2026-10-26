@@ -60,11 +60,9 @@ final class CustomBlockRuntime {
      * main thread and back. {@link #resolve} can't be used there since it reads {@link CustomBlockData},
      * which (like the rest of the Bukkit API) must stay on the main thread.
      *
-     * <p>Populated in {@link #place}, cleared in {@link #remove} - both main-thread-only.
-     * {@link #isKnownPart} itself is safe to call from any thread. Not backfilled from persisted
-     * {@link CustomBlockData} on world/chunk load, so a CustomBlock placed in a previous server session
-     * won't get packet-level cancellation until re-placed; the normal, {@link CustomBlockData}-backed
-     * {@link #resolve} path is unaffected and still works for it regardless.</p>
+     * <p>Populated in {@link #place} and, from persisted {@link CustomBlockData}, whenever a chunk loads
+     * ({@link CustomBlockEntityManager#loadChunk}); cleared in {@link #remove} and on chunk unload - all
+     * main-thread-only. {@link #isKnownPart} itself is safe to call from any thread.</p>
      */
     private static final Set<PartKey> KNOWN_PARTS = ConcurrentHashMap.newKeySet();
 
@@ -267,6 +265,22 @@ final class CustomBlockRuntime {
     }
 
     /**
+     * Registers a persisted cell as a {@link #isKnownPart known part}, e.g. when its chunk loads.
+     * @param block the cell
+     */
+    static void addKnownPart(@NotNull Block block) {
+        KNOWN_PARTS.add(PartKey.of(block));
+    }
+
+    /**
+     * Forgets a cell as a {@link #isKnownPart known part}, e.g. when its chunk unloads.
+     * @param block the cell
+     */
+    static void removeKnownPart(@NotNull Block block) {
+        KNOWN_PARTS.remove(PartKey.of(block));
+    }
+
+    /**
      * Thread-safe check for whether {@code (x, y, z)} in the world identified by {@code worldId} is a
      * currently-placed CustomBlock cell. Safe to call from any thread, unlike {@link #resolve}.
      * @param worldId the world's unique id
@@ -414,6 +428,20 @@ final class CustomBlockRuntime {
             return null;
         }
         return new ResolvedBlock(new MultiblockInstance(customBlock, core, facing), role);
+    }
+
+    /**
+     * Cheap check for whether {@code block} carries CustomBlock cell data, without resolving its structure.
+     * @param block the block
+     * @param plugin the owning plugin
+     * @return the cell's stored role, or {@code null} if it isn't a CustomBlock cell of a registered CustomBlock
+     */
+    static @Nullable Role cellRole(@NotNull Block block, @NotNull Plugin plugin) {
+        if (!CustomBlockData.hasCustomBlockData(block, plugin)) return null;
+        CustomBlockData data = new CustomBlockData(block, plugin);
+        NamespacedKey id = readId(data);
+        if (id == null || CustomBlockRegistry.get(id) == null) return null;
+        return readRole(data);
     }
 
     private static @Nullable NamespacedKey readId(@NotNull CustomBlockData data) {

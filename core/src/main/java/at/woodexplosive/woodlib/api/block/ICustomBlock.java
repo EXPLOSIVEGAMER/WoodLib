@@ -139,6 +139,17 @@ public interface ICustomBlock {
     }
 
     /**
+     * Creates the runtime object of a placed structure (HBM's {@code createNewTileEntity}): it ticks while
+     * the core's chunk is loaded and can hold state, e.g. to act as a network receiver. Called on placement
+     * and again every time the core's chunk loads. See {@link CustomBlockEntity}.
+     * @param instance the placed structure
+     * @return a new entity, or {@code null} (the default) if this CustomBlock needs none
+     */
+    default @Nullable CustomBlockEntity createEntity(@NotNull MultiblockInstance instance) {
+        return null;
+    }
+
+    /**
      * Called when a player interacts with a placed instance of this CustomBlock. No-op by default.
      * @param event the interact event
      */

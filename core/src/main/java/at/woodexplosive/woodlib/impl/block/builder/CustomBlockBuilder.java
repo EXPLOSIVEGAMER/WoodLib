@@ -1,10 +1,12 @@
 package at.woodexplosive.woodlib.impl.block.builder;
 
+import at.woodexplosive.woodlib.api.block.CustomBlockEntity;
 import at.woodexplosive.woodlib.api.block.Dimensions;
 import at.woodexplosive.woodlib.api.block.DisplayDefinition;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
 import at.woodexplosive.woodlib.api.block.LocalDirection;
 import at.woodexplosive.woodlib.api.block.LocalPos;
+import at.woodexplosive.woodlib.api.block.MultiblockInstance;
 import at.woodexplosive.woodlib.api.block.MultiblockShape;
 import at.woodexplosive.woodlib.api.block.ToolTier;
 import at.woodexplosive.woodlib.api.block.builder.ICustomBlockBuilder;
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Fluent builder for {@link ICustomBlock} definitions.
@@ -51,6 +54,7 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
     private Consumer<CustomBlockInteractEvent> onInteract = event -> {};
     private Consumer<CustomBlockPlaceEvent> onPlace = event -> {};
     private Consumer<CustomBlockBreakEvent> onBreak = event -> {};
+    private Function<MultiblockInstance, ? extends CustomBlockEntity> entityFactory = instance -> null;
 
     private CustomBlockBuilder(@NotNull NamespacedKey id) {
         this.id = id;
@@ -221,6 +225,12 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
         return this;
     }
 
+    @Override
+    public @NotNull CustomBlockBuilder entity(@NotNull Function<MultiblockInstance, ? extends CustomBlockEntity> factory) {
+        this.entityFactory = factory;
+        return this;
+    }
+
     @Contract(value = "-> new")
     @Override
     public @NotNull ICustomBlock build() {
@@ -231,6 +241,6 @@ public final class CustomBlockBuilder implements ICustomBlockBuilder<CustomBlock
             }
         }
         return new CustomBlock(id, built, displays, defaultCollision, collisionOverrides, offset, heightOffset, rotatable,
-                hardness, requiredToolType, minimumToolTier, blockTags, onInteract, onPlace, onBreak);
+                hardness, requiredToolType, minimumToolTier, blockTags, onInteract, onPlace, onBreak, entityFactory);
     }
 }

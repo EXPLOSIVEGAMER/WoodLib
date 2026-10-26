@@ -114,6 +114,7 @@ public final class CustomBlockListener implements Listener {
         if (!placeEvent.callEvent()) return;
 
         CustomBlockRuntime.place(placement.instance());
+        CustomBlockEntityManager.create(placement.instance());
 
         if (gameMode != GameMode.CREATIVE) {
             itemInHand.subtract(1);
@@ -170,6 +171,7 @@ public final class CustomBlockListener implements Listener {
         customBlock.onBreak(breakEvent);
         if (!breakEvent.callEvent()) return;
 
+        CustomBlockEntityManager.remove(resolved.instance());
         CustomBlockRuntime.remove(resolved.instance());
 
         // Computed before damaging the held item: a tool that breaks (hits 0 durability) on this exact

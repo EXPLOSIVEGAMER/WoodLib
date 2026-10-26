@@ -13,6 +13,10 @@ WoodLib is an Bukkit Plugin library made by me (WoodEXPLOSIVE).
 - AbstractItemBuilder
 - ItemBuilder
 - Scheduler (Bukkit + Async Millisecond Scheduler)
+- Custom Blocks
+- Custom Multiblocks
+- CustomBlockEntities
+- UniNode
 ## Gui Lib:
 - Interfaces for all Elements for easy extending
 ### Elements:
@@ -25,8 +29,16 @@ WoodLib is an Bukkit Plugin library made by me (WoodEXPLOSIVE).
 - SimpleTabbedGui
 - SimpleTabbedPagedGui
 
+### Custom Blocks
+Lib for CustomBlocks with no limit
+Including CustomBlockEntities for advanced data storage
+
+### Uninode
+Lib for creating networks (power, fluid, usw.)
+
 ##Utilities:
 - MathUtil
+- CommandUtil
 
 And many more to come
 

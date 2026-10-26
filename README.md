@@ -7,6 +7,8 @@ WoodLib is an Bukkit Plugin library made by me (WoodEXPLOSIVE).
 I've made this Library to take plugins as close to MC modding as possible.
 Also featureing usefull Utilities for creating plugins.
 
+## [Documentation](docs/README.md)
+
 ## Features:
 
 <details>

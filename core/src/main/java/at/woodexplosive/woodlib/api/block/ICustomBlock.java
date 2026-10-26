@@ -4,13 +4,19 @@ import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockPlaceEvent;
-import at.woodexplosive.woodlib.block.builder.CustomBlockBuilder;
+import at.woodexplosive.woodlib.impl.block.builder.CustomBlockBuilder;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Transformation;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -21,14 +27,21 @@ import org.joml.Vector3f;
 import java.util.List;
 
 /**
- * A registered "fake" custom block definition: one or more {@link CustomBlockPart}s, each a real
- * {@link org.bukkit.Material#BARRIER Barrier} (or other material) for collision plus one or more
- * {@link DisplayDefinition BlockDisplays} for the visual.
+ * A registered "fake" custom block definition, modelled after HBM NTM's {@code BlockDummyable}: a
+ * {@link #shape() multiblock shape} of collision blocks (typically {@link Material#BARRIER Barriers})
+ * around a single <b>core</b>, which carries the structure's identity, facing and state and anchors its
+ * {@link #displays() displays}. Every other cell is a <b>dummy</b> pointing at the core;
+ * {@link PortDefinition ports} are marked dummies that connect to the outside.
  *
- * <p>Instances are built with {@link CustomBlockBuilder} and made
- * usable by registering them, together with their placer/drop item, in
- * {@link CustomBlockRegistry#register(ICustomBlock, ItemStack)}. An item is linked to a CustomBlock
- * via {@link at.woodexplosive.woodlib.api.item.AbstractItemBuilder#linkCustomBlock(ICustomBlock)}.</p>
+ * <p>Placement works like HBM: the structure's front faces the placing player and it grows away from
+ * them (see {@link #offset()}); placed against a wall or ceiling it is shifted to sit flush against the
+ * clicked face. While a player holds the linked item, a placement preview outlines where it would go.</p>
+ *
+ * <p>Instances are built with {@link CustomBlockBuilder} or by extending
+ * {@link at.woodexplosive.woodlib.impl.block.BaseCustomBlock}, and made usable by registering them,
+ * together with their placer/drop item, in {@link CustomBlockRegistry#register(ICustomBlock, ItemStack)}.
+ * An item is linked to a CustomBlock via
+ * {@link at.woodexplosive.woodlib.api.item.AbstractItemBuilder#linkCustomBlock(ICustomBlock)}.</p>
  */
 public interface ICustomBlock {
 
@@ -40,12 +53,90 @@ public interface ICustomBlock {
     @NotNull NamespacedKey id();
 
     /**
-     * The parts making up this CustomBlock's structure, relative to its placement origin. Never
-     * empty; a single-block CustomBlock has exactly one part at offset {@code (0,0,0)}.
-     * @return the immutable list of parts
+     * The cells making up this CustomBlock, relative to its core. {@link MultiblockShape#SINGLE} for a
+     * plain single block. Should return the same instance on every call.
+     * @return the shape
      */
     @Contract(pure = true)
-    @NotNull List<CustomBlockPart> parts();
+    @NotNull MultiblockShape shape();
+
+    /**
+     * The displays rendering this CustomBlock, all spawned at the core - the counterpart of HBM rendering
+     * a whole machine from its core's TESR. Translations are relative to the core cell's corner, authored
+     * for a structure facing {@link BlockFace#NORTH} (see {@link LocalPos}); they are rotated with it.
+     * @return the displays, empty by default
+     */
+    @Contract(pure = true)
+    default @NotNull List<DisplayDefinition> displays() {
+        return List.of();
+    }
+
+    /**
+     * The block placed for collision at a cell, authored for a structure facing {@link BlockFace#NORTH}
+     * and rotated with it (e.g. a stair's facing).
+     * @param pos the cell
+     * @return the collision block data, {@link Material#BARRIER} by default
+     */
+    @Contract(pure = true)
+    default @NotNull BlockData collisionData(@NotNull LocalPos pos) {
+        return Material.BARRIER.createBlockData();
+    }
+
+    /**
+     * How far the core is pushed away from the placing player when placed on a floor or ceiling (HBM's
+     * {@code getOffset()}). Defaults to the shape's forward extent, so the structure's front row lands on
+     * the aimed-at block.
+     * @return the offset in blocks
+     */
+    @Contract(pure = true)
+    default int offset() {
+        return shape().bounds().forward();
+    }
+
+    /**
+     * Extra vertical shift of the core on placement (HBM's {@code getHeightOffset()}).
+     * @return the height offset in blocks, {@code 0} by default
+     */
+    @Contract(pure = true)
+    default int heightOffset() {
+        return 0;
+    }
+
+    /**
+     * Adjusts the facing derived from the player's placement, e.g. to restrict a structure to two
+     * orientations (HBM's {@code getDirModified}). Only called when {@link #rotatable()}.
+     * @param facing the facing derived from the click, always cardinal
+     * @return the facing to place with, must be cardinal
+     */
+    @Contract(pure = true)
+    default @NotNull BlockFace modifyFacing(@NotNull BlockFace facing) {
+        return facing;
+    }
+
+    /**
+     * Whether the structure may be placed as described by {@code context} (HBM's {@code checkRequirement}).
+     * By default every cell must be {@link Block#isReplaceable() replaceable} and free of living entities.
+     * Also drives the placement preview's color.
+     * @param context the prospective placement
+     * @return {@code true} if it may be placed
+     */
+    default boolean canPlace(@NotNull PlacementContext context) {
+        for (Block cell : context.instance().cells()) {
+            if (!cell.isReplaceable()) return false;
+            for (Entity entity : cell.getWorld().getNearbyEntities(BoundingBox.of(cell))) {
+                if (entity instanceof LivingEntity) return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @return {@code true} (the default) to show a placement preview to players holding the linked item
+     */
+    @Contract(pure = true)
+    default boolean showPlacementPreview() {
+        return true;
+    }
 
     /**
      * Called when a player interacts with a placed instance of this CustomBlock. No-op by default.
@@ -66,8 +157,8 @@ public interface ICustomBlock {
     default void onPlace(CustomBlockPlaceEvent event) {}
 
     /**
-     * Whether this CustomBlock is placed with a 4-way cardinal rotation snapped from the placing
-     * player's yaw. If {@code false} (the default), it is always placed in its authored orientation.
+     * Whether this CustomBlock is placed facing the placing player (HBM-style). If {@code false} (the
+     * default), it always faces {@link BlockFace#NORTH}, its authored orientation.
      * @return {@code true} if placement rotates the structure
      */
     @Contract(pure = true)
@@ -112,8 +203,8 @@ public interface ICustomBlock {
     /**
      * Vanilla block {@link Tag}s this CustomBlock is declared to belong to (e.g. {@link Tag#CROPS}) -
      * pure metadata for other code to query via {@link #hasBlockTag(Tag)}. Attaching a tag here does
-     * <b>not</b> confer any of its vanilla behavior: every part is a real
-     * {@link org.bukkit.Material#BARRIER Barrier} (or another collision-only material), so growth ticks,
+     * <b>not</b> confer any of its vanilla behavior: every cell is a real
+     * {@link Material#BARRIER Barrier} (or another collision-only material), so growth ticks,
      * bonemeal, trampling etc. never run on it - those are wired to the actual placed block's own class,
      * not to tag membership. {@code List.of()} (the default) means no tags declared.
      * @return the declared block tags
@@ -134,7 +225,7 @@ public interface ICustomBlock {
 
     /**
      * The {@link NamespacedKey} a CustomBlock's {@link #id()} is stamped under: on a linked placer
-     * item's {@link ItemMeta} persistent data, on each placed part's
+     * item's {@link ItemMeta} persistent data, on each placed cell's
      * {@code com.jeff_media.customblockdata.CustomBlockData}, and on each spawned display entity's own
      * persistent data container.
      * @return the id {@link NamespacedKey}

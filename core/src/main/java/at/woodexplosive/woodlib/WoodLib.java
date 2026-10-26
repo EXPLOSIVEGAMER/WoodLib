@@ -1,9 +1,13 @@
 package at.woodexplosive.woodlib;
 
 import at.woodexplosive.woodlib.api.block.CustomBlockRegistry;
-import at.woodexplosive.woodlib.block.CustomBlockDigging;
-import at.woodexplosive.woodlib.block.CustomBlockListener;
-import at.woodexplosive.woodlib.gui.gui.AbstractGui;
+import at.woodexplosive.woodlib.api.uninode.UniNodespace;
+import at.woodexplosive.woodlib.impl.Scheduler;
+import at.woodexplosive.woodlib.impl.block.CustomBlockDigging;
+import at.woodexplosive.woodlib.impl.block.CustomBlockListener;
+import at.woodexplosive.woodlib.impl.block.CustomBlockPlacementPreview;
+import at.woodexplosive.woodlib.impl.gui.gui.AbstractGui;
+import at.woodexplosive.woodlib.impl.uninode.NodeSpaceListener;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.jeff_media.customblockdata.CustomBlockData;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
@@ -52,13 +56,8 @@ public final class WoodLib {
         plugin = host;
         logger = LoggerFactory.getLogger(String.format("%s:%s", LIB_ID, host.getName()));
 
-        // PacketEvents' recommended pattern splits load() into onLoad() and init() into onEnable() (for
-        // early-connection channel injection). WoodLib only has one lifecycle hook to work with -
-        // whatever the host calls this from, typically its own onEnable() - so both phases happen here
-        // back to back. This is a documented, supported fallback, just not the ideal ordering.
         PacketEvents.setAPI(SpigotPacketEventsBuilder.build(host));
-        // bStats(false) exists but is deprecated by PacketEvents itself - opting out isn't currently
-        // possible without triggering that warning, so we leave its default (enabled) in place.
+
         PacketEvents.getAPI().getSettings().checkForUpdates(false);
         PacketEvents.getAPI().load();
         PacketEvents.getAPI().init();
@@ -77,6 +76,7 @@ public final class WoodLib {
         Scheduler.stop();
         CustomBlockRegistry.clear();
         PacketEvents.getAPI().terminate();
+        UniNodespace.clearNodes();
         plugin = null;
         logger = null;
     }
@@ -105,16 +105,14 @@ public final class WoodLib {
 
     private static void rListeners() {
         PluginManager pm = Bukkit.getPluginManager();
+        pm.registerEvents(new NodeSpaceListener(), plugin());
+
         pm.registerEvents(new AbstractGui.GuiListener(), plugin());
+
         pm.registerEvents(new CustomBlockListener(), plugin());
         pm.registerEvents(new CustomBlockDigging(), plugin());
         CustomBlockDigging.registerPacketListener();
-
-        // CustomBlock parts default to Material.BARRIER, which never produces a real BlockBreakEvent in
-        // survival, so CustomBlockListener handles breaking itself and this auto-clear rarely fires for
-        // our own data. It still matters for CustomBlockPart definitions that use a normal (breakable)
-        // material: without this, a real BlockBreakEvent/explosion/piston-push could leave orphaned
-        // CustomBlockData behind. Do not remove this call.
+        CustomBlockPlacementPreview.start();
         CustomBlockData.registerListener(plugin());
     }
 }

@@ -2,6 +2,7 @@ package at.woodexplosive.woodlib.api.gui.event;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.gui.IGui;
+import at.woodexplosive.woodlib.impl.gui.gui.AbstractGui;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.inventory.*;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
  * {@link InventoryClickEvent} with the GUI and (if resolved) the {@link IGuiElement} that was
  * clicked.
  *
- * <p>Dispatched by {@link at.woodexplosive.woodlib.gui.gui.AbstractGui.GuiListener} for the global
+ * <p>Dispatched by {@link AbstractGui.GuiListener} for the global
  * click callback, the resolved element's callback, and any standalone slot callback, in that order;
  * cancelling any of those (or this event itself) cancels the underlying inventory click.</p>
  */

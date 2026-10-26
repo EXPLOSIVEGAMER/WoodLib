@@ -1,13 +1,17 @@
 package at.woodexplosive.woodlib.api.block.builder;
 
-import at.woodexplosive.woodlib.api.block.CustomBlockPart;
+import at.woodexplosive.woodlib.api.block.Dimensions;
+import at.woodexplosive.woodlib.api.block.DisplayDefinition;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
+import at.woodexplosive.woodlib.api.block.LocalDirection;
+import at.woodexplosive.woodlib.api.block.LocalPos;
 import at.woodexplosive.woodlib.api.block.ToolTier;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockBreakEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockInteractEvent;
 import at.woodexplosive.woodlib.api.block.event.CustomBlockPlaceEvent;
 import org.bukkit.Material;
 import org.bukkit.Tag;
+import org.bukkit.block.data.BlockData;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,23 +20,89 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Fluent builder for assembling an {@link ICustomBlock} from one or more {@link CustomBlockPart}s plus
- * its mining and interaction behavior.
+ * Fluent builder for assembling an HBM-style multiblock {@link ICustomBlock}: its shape (boxes around
+ * the core plus ports), placement offsets, core-anchored displays, collision blocks, and its mining and
+ * interaction behavior.
  * @param <T> the concrete builder type, for covariant method chaining
  */
 public interface ICustomBlockBuilder<T extends ICustomBlockBuilder<T>> {
 
     /**
-     * Adds a part to this structure.
-     * @param part the {@link CustomBlockPart} to add
+     * Adds a box around the core (HBM's {@code getDimensions()}). Without any box, the CustomBlock is a
+     * single block.
+     * @param dimensions the box's extents
      * @return this builder for chaining
      */
     @Contract(value = "_ -> this")
-    @NotNull T part(@NotNull CustomBlockPart part);
+    @NotNull T box(@NotNull Dimensions dimensions);
 
     /**
-     * Sets whether this CustomBlock is placed with a 4-way cardinal rotation snapped from the placing
-     * player's yaw. Defaults to {@code false}.
+     * Adds a box around {@code offset} instead of the core, for compound shapes (HBM's
+     * {@code getAllDimensions()}).
+     * @param dimensions the box's extents
+     * @param offset the box's center, relative to the core
+     * @return this builder for chaining
+     */
+    @Contract(value = "_, _ -> this")
+    @NotNull T box(@NotNull Dimensions dimensions, @NotNull LocalPos offset);
+
+    /**
+     * Adds a port (HBM's "extra" dummy) at a cell of the shape.
+     * @param pos the port's cell
+     * @param direction the side the port connects through
+     * @return this builder for chaining
+     */
+    @Contract(value = "_, _ -> this")
+    @NotNull T port(@NotNull LocalPos pos, @NotNull LocalDirection direction);
+
+    /**
+     * Sets how far the core is pushed away from the placing player on floor/ceiling placement.
+     * Defaults to the shape's forward extent.
+     * @param offset the offset in blocks
+     * @return this builder for chaining
+     * @see ICustomBlock#offset()
+     */
+    @Contract(value = "_ -> this")
+    @NotNull T offset(int offset);
+
+    /**
+     * Sets the extra vertical shift of the core on placement. Defaults to {@code 0}.
+     * @param heightOffset the height offset in blocks
+     * @return this builder for chaining
+     * @see ICustomBlock#heightOffset()
+     */
+    @Contract(value = "_ -> this")
+    @NotNull T heightOffset(int heightOffset);
+
+    /**
+     * Adds a display rendered at the core.
+     * @param display the display
+     * @return this builder for chaining
+     * @see ICustomBlock#displays()
+     */
+    @Contract(value = "_ -> this")
+    @NotNull T display(@NotNull DisplayDefinition display);
+
+    /**
+     * Sets the collision block used for every cell without an explicit override. Defaults to
+     * {@link Material#BARRIER}.
+     * @param data the collision block data, authored facing north
+     * @return this builder for chaining
+     */
+    @Contract(value = "_ -> this")
+    @NotNull T collision(@NotNull BlockData data);
+
+    /**
+     * Sets the collision block for one cell.
+     * @param pos the cell
+     * @param data the collision block data, authored facing north
+     * @return this builder for chaining
+     */
+    @Contract(value = "_, _ -> this")
+    @NotNull T collision(@NotNull LocalPos pos, @NotNull BlockData data);
+
+    /**
+     * Sets whether this CustomBlock is placed facing the placing player. Defaults to {@code false}.
      * @param rotatable {@code true} to enable placement rotation
      * @return this builder for chaining
      */
@@ -104,7 +174,7 @@ public interface ICustomBlockBuilder<T extends ICustomBlockBuilder<T>> {
      * Builds the configured {@link ICustomBlock}. Does not register it - use
      * {@link at.woodexplosive.woodlib.api.block.CustomBlockRegistry#register(ICustomBlock, org.bukkit.inventory.ItemStack)}.
      * @return the new {@link ICustomBlock}
-     * @throws IllegalStateException if no parts were added
+     * @throws IllegalArgumentException if a port isn't on a cell of the shape, or the shape is too large
      */
     @Contract(value = "-> new")
     @NotNull ICustomBlock build();

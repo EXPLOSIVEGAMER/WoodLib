@@ -2,6 +2,7 @@ package at.woodexplosive.woodlib.api.gui.element;
 
 import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.event.GuiClickEvent;
+import at.woodexplosive.woodlib.impl.gui.element.GuiElement;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
@@ -16,7 +17,7 @@ import java.util.UUID;
  * to display plus an optional {@link ClickCallback} invoked when the slot is clicked.
  *
  * <p>Instances are typically created through
- * {@link at.woodexplosive.woodlib.gui.element.GuiElement} and its builder.</p>
+ * {@link GuiElement} and its builder.</p>
  */
 public interface IGuiElement {
     /** Shared {@link MiniMessage} instance for deserializing user-facing strings. */

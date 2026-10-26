@@ -13,7 +13,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 /**
- * The visual configuration for a single display spawned for a {@link CustomBlockPart}: either a
+ * The visual configuration for a single display spawned at an {@link ICustomBlock}'s core: either a
  * vanilla {@link BlockData} rendered via a {@link org.bukkit.entity.BlockDisplay} ({@link OfBlock}),
  * or a (typically custom-modeled) {@link ItemStack} rendered via an {@link ItemDisplay}
  * ({@link OfItem}).

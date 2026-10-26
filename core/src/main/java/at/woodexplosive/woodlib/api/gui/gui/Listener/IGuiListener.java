@@ -1,5 +1,6 @@
 package at.woodexplosive.woodlib.api.gui.gui.Listener;
 
+import at.woodexplosive.woodlib.impl.gui.gui.AbstractGui;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.*;
 import org.jetbrains.annotations.NotNull;
@@ -7,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Bukkit {@link Listener} contract for routing inventory events to the owning
  * {@link at.woodexplosive.woodlib.api.gui.gui.IGui}. Implemented by
- * {@link at.woodexplosive.woodlib.gui.gui.AbstractGui.GuiListener}, which WoodLib registers on
+ * {@link AbstractGui.GuiListener}, which WoodLib registers on
  * initialization.
  */
 public interface IGuiListener extends Listener {

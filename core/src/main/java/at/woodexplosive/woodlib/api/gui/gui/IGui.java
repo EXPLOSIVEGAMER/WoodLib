@@ -1,6 +1,7 @@
 package at.woodexplosive.woodlib.api.gui.gui;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
+import at.woodexplosive.woodlib.impl.gui.gui.SimpleGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -19,7 +20,7 @@ import java.util.Map;
  * GUI itself, so events can be routed back to it.
  *
  * <p>GUIs are built through their {@code Builder} (see
- * {@link at.woodexplosive.woodlib.gui.gui.SimpleGui}), populated with {@link IGuiElement}s per slot,
+ * {@link SimpleGui}), populated with {@link IGuiElement}s per slot,
  * and shown with {@link #open(Player)}. While open, a GUI ticks every server tick (see
  * {@link #startTicking()}).</p>
  *

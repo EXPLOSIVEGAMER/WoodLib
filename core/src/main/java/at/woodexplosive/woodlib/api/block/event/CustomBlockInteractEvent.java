@@ -1,6 +1,7 @@
 package at.woodexplosive.woodlib.api.block.event;
 
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
+import at.woodexplosive.woodlib.api.block.MultiblockInstance;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -19,8 +20,6 @@ public class CustomBlockInteractEvent extends CustomBlockEvent implements Cancel
     private static final HandlerList HANDLERS = new HandlerList();
 
     private final Block clickedBlock;
-    private final int clickedPartIndex;
-    private final int rotationSteps;
     private final EquipmentSlot hand;
     private final ItemStack itemInHand;
 
@@ -28,44 +27,38 @@ public class CustomBlockInteractEvent extends CustomBlockEvent implements Cancel
 
     /**
      * @param player the interacting player
-     * @param customBlock the {@link ICustomBlock} being interacted with
-     * @param originBlock the structure's placement origin block
-     * @param clickedBlock the specific part block that was right-clicked
-     * @param clickedPartIndex the index into {@link ICustomBlock#parts()} of {@code clickedBlock}
-     * @param rotationSteps the structure's rotation (0-3, 90° steps) as placed
+     * @param instance the structure being interacted with
+     * @param clickedBlock the specific cell that was right-clicked
      * @param hand the hand used to interact
      * @param itemInHand the item in that hand, possibly empty
      */
-    public CustomBlockInteractEvent(@NotNull Player player, @NotNull ICustomBlock customBlock, @NotNull Block originBlock,
-                                     @NotNull Block clickedBlock, int clickedPartIndex, int rotationSteps,
+    public CustomBlockInteractEvent(@NotNull Player player, @NotNull MultiblockInstance instance, @NotNull Block clickedBlock,
                                      @NotNull EquipmentSlot hand, @NotNull ItemStack itemInHand) {
-        super(player, customBlock, originBlock);
+        super(player, instance);
         this.clickedBlock = clickedBlock;
-        this.clickedPartIndex = clickedPartIndex;
-        this.rotationSteps = rotationSteps;
         this.hand = hand;
         this.itemInHand = itemInHand;
     }
 
     /**
-     * @return the specific part block that was right-clicked
+     * @return the specific cell that was right-clicked
      */
     public @NotNull Block getClickedBlock() {
         return clickedBlock;
     }
 
     /**
-     * @return the index into {@link ICustomBlock#parts()} of {@link #getClickedBlock()}
+     * @return {@code true} if {@link #getClickedBlock()} is the structure's core
      */
-    public int getClickedPartIndex() {
-        return clickedPartIndex;
+    public boolean isCoreClicked() {
+        return getInstance().isCore(clickedBlock);
     }
 
     /**
-     * @return the structure's rotation in 90° steps (0-3), as it was placed
+     * @return {@code true} if {@link #getClickedBlock()} is one of the structure's ports
      */
-    public int getRotationSteps() {
-        return rotationSteps;
+    public boolean isPortClicked() {
+        return getInstance().isPort(clickedBlock);
     }
 
     /**

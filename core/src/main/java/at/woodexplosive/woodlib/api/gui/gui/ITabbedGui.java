@@ -2,7 +2,7 @@ package at.woodexplosive.woodlib.api.gui.gui;
 
 import at.woodexplosive.woodlib.api.gui.element.IGuiElement;
 import at.woodexplosive.woodlib.api.gui.element.ITab;
-import at.woodexplosive.woodlib.gui.element.GuiElementBuilder;
+import at.woodexplosive.woodlib.impl.gui.element.GuiElementBuilder;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;

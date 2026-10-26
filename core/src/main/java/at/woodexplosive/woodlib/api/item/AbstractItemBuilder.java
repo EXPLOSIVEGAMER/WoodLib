@@ -2,11 +2,12 @@ package at.woodexplosive.woodlib.api.item;
 
 import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
+import at.woodexplosive.woodlib.impl.gui.element.GuiElementBuilder;
+import at.woodexplosive.woodlib.impl.item.ItemBuilder;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;
 import com.google.common.collect.Multimap;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -37,7 +38,7 @@ import java.util.function.Supplier;
 /**
  * Shared fluent builder for configuring an {@link ItemStack} (display name, lore, enchantments,
  * attributes, persistent data, skull textures, etc.) via {@link ItemMeta}. Concrete subclasses (e.g.
- * {@link at.woodexplosive.woodlib.item.ItemBuilder}, {@link at.woodexplosive.woodlib.gui.element.GuiElementBuilder})
+ * {@link ItemBuilder}, {@link GuiElementBuilder})
  * supply the factories used by {@link #of(Material, int, Supplier)} and
  * {@link #copyOf(ItemStack, Supplier)}; {@link #build()} returns a copy of the configured stack.
  *

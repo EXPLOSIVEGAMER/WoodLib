@@ -1,66 +1,56 @@
 package at.woodexplosive.woodlib.api.block.event;
 
 import at.woodexplosive.woodlib.api.block.ICustomBlock;
+import at.woodexplosive.woodlib.api.block.PlacementContext;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Fired when a player is about to place a {@link ICustomBlock} by right-clicking with a linked item.
- * Cancelling the event prevents the structure from being placed and the item from being consumed.
+ * Fired when a player is about to place a {@link ICustomBlock} by right-clicking with a linked item,
+ * after {@link ICustomBlock#canPlace(PlacementContext)} passed. Cancelling the event prevents the
+ * structure from being placed and the item from being consumed.
  */
 public class CustomBlockPlaceEvent extends CustomBlockEvent implements Cancellable {
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Block clickedBlock;
-    private final BlockFace clickedFace;
-    private final int rotationSteps;
+    private final PlacementContext placement;
     private final ItemStack itemInHand;
 
     private boolean cancelled = false;
 
     /**
-     * @param player the placing player
-     * @param customBlock the {@link ICustomBlock} being placed
-     * @param originBlock the structure's placement origin block
-     * @param clickedBlock the block the player right-clicked
-     * @param clickedFace the face of {@code clickedBlock} that was clicked
-     * @param rotationSteps the structure's rotation (0-3, 90° steps), always {@code 0} unless {@link ICustomBlock#rotatable()}
+     * @param placement the resolved placement
      * @param itemInHand the linked placer item in the player's hand
      */
-    public CustomBlockPlaceEvent(@NotNull Player player, @NotNull ICustomBlock customBlock, @NotNull Block originBlock,
-                                  @NotNull Block clickedBlock, @NotNull BlockFace clickedFace, int rotationSteps,
-                                  @NotNull ItemStack itemInHand) {
-        super(player, customBlock, originBlock);
-        this.clickedBlock = clickedBlock;
-        this.clickedFace = clickedFace;
-        this.rotationSteps = rotationSteps;
+    public CustomBlockPlaceEvent(@NotNull PlacementContext placement, @NotNull ItemStack itemInHand) {
+        super(placement.player(), placement.instance());
+        this.placement = placement;
         this.itemInHand = itemInHand;
+    }
+
+    /**
+     * @return the resolved placement: clicked block and face plus the prospective structure
+     */
+    public @NotNull PlacementContext getPlacement() {
+        return placement;
     }
 
     /**
      * @return the block the player right-clicked to trigger this placement
      */
     public @NotNull Block getClickedBlock() {
-        return clickedBlock;
+        return placement.clickedBlock();
     }
 
     /**
      * @return the face of {@link #getClickedBlock()} that was clicked
      */
     public @NotNull BlockFace getClickedFace() {
-        return clickedFace;
-    }
-
-    /**
-     * @return the structure's rotation in 90° steps (0-3)
-     */
-    public int getRotationSteps() {
-        return rotationSteps;
+        return placement.clickedFace();
     }
 
     /**

@@ -2,7 +2,7 @@ package at.woodexplosive.woodlib.api.gui.element;
 
 import at.woodexplosive.woodlib.WoodLib;
 import at.woodexplosive.woodlib.api.gui.gui.ITabbedGui;
-import at.woodexplosive.woodlib.gui.element.GuiElement;
+import at.woodexplosive.woodlib.impl.gui.element.GuiElement;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 

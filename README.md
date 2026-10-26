@@ -1,5 +1,7 @@
 [![jitpack](https://jitpack.io/v/EXPLOSIVEGAMER/WoodLib.svg)](https://jitpack.io/#EXPLOSIVEGAMER/WoodLib)
 
+[Credits & Sources](https://github.com/EXPLOSIVEGAMER/WoodLib/blob/master/CREDITS.md)
+
 # WoodLib
 WoodLib is an Bukkit Plugin library made by me (WoodEXPLOSIVE).
 
